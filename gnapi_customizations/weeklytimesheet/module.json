@@ -1,0 +1,52 @@
+{
+  "name": "WeeklyTimesheet",
+  "label": "Weekly Timesheet",
+  "description": "Weekly Timesheet Management",
+  "color": "#1f77b4",
+  "icon": "octicon octicon-calendar",
+  "type": "module",
+  "category": "Project Management",
+  "doctype_list": [
+    {
+      "label": "Weekly Timesheet",
+      "name": "WeeklyTimesheet",
+      "description": "Manage weekly timesheets",
+      "route": "/app/weeklytimesheet",
+      "icon": "octicon octicon-calendar"
+    },
+    {
+      "label": "Timesheet Task Approval",
+      "name": "Timesheet Task Approval",
+      "description": "Approve timesheet entries",
+      "route": "/app/timesheet-task-approval",
+      "icon": "octicon octicon-check"
+    }
+  ],
+  "reports": [
+    {
+      "label": "Timesheet Summary",
+      "name": "Timesheet Summary",
+      "route": "/app/query-report/timesheet-summary",
+      "icon": "octicon octicon-graph"
+    }
+  ],
+  "pages": [
+    {
+      "label": "Dashboard",
+      "name": "Timesheet Dashboard",
+      "route": "/timesheet_dashboard",
+      "icon": "octicon octicon-dashboard"
+    }
+  ],
+  "settings": [],
+  "help_links": [
+    {
+      "label": "Documentation",
+      "url": "/app/help"
+    },
+    {
+      "label": "Support",
+      "url": "/app/support"
+    }
+  ]
+}

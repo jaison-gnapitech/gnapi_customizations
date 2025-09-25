@@ -1,0 +1,40 @@
+[
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Save",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2025-08-16 12:43:14.619121",
+  "module": "Gnapi Customizations",
+  "name": "Validate Active Approver",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "reference_doctype": "Project",
+  "script": "if not any(d.active for d in doc.custom_timesheet_approvers):\n    frappe.throw(\"At least one Timesheet Approver must be marked as active.\")",
+  "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "After Submit",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2025-08-17 18:48:54.887995",
+  "module": "Gnapi Customizations",
+  "name": "Create Approval Requests",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "reference_doctype": "Timesheet",
+  "script": "for td in doc.time_logs:\n    if td.project is not None:\n        project = frappe.get_doc(\"Project\", td.project)\n        for aprvr in project.custom_timesheet_approvers:\n            new_approval = frappe.new_doc(\"Timesheet Task Approval\")\n            new_approval.approver = aprvr.approver\n            new_approval.hours = td.hours\n            new_approval.project = td.project\n            new_approval.task = td.task\n            new_approval.is_billable = td.is_billable\n            new_approval.employee = doc.employee\n            new_approval.status = \"Pending\"\n            new_approval.timesheet = td.parent\n            new_approval.insert()\n            # Assign it to a specific user\n            todo = frappe.new_doc(\"ToDo\")\n            todo.assigned_by = frappe.session.user\n            todo.owner = aprvr.approver\n            todo.reference_type = \"Timesheet Task Approval\"\n            todo.reference_name = new_approval.name\n            todo.description = \"New task approval required.\"\n            todo.save()",
+  "script_type": "DocType Event"
+ }
+]

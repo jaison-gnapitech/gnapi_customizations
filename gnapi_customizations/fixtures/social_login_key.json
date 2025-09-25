@@ -1,0 +1,25 @@
+[
+ {
+  "access_token_url": "https://login.microsoftonline.com/common/oauth2/token",
+  "api_endpoint": null,
+  "api_endpoint_args": null,
+  "auth_url_data": "{\"response_type\": \"code\", \"scope\": \"openid\"}",
+  "authorize_url": "https://login.microsoftonline.com/common/oauth2/authorize",
+  "base_url": "https://login.microsoftonline.com",
+  "client_id": "cc7bae28-e0f7-42e6-a0e3-cc0977e421c6",
+  "client_secret": "****************************************",
+  "custom_base_url": 0,
+  "docstatus": 0,
+  "doctype": "Social Login Key",
+  "enable_social_login": 1,
+  "icon": "/assets/frappe/icons/social/office_365.svg",
+  "modified": "2025-08-22 17:53:16.272055",
+  "name": "office_365",
+  "provider_name": "Office 365",
+  "redirect_url": "/api/method/frappe.integrations.oauth2_logins.login_via_office365",
+  "show_in_resource_metadata": 1,
+  "sign_ups": "Allow",
+  "social_login_provider": "Office 365",
+  "user_id_property": null
+ }
+]

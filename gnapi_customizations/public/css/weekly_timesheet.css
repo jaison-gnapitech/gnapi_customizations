@@ -1,0 +1,446 @@
+/* Weekly Timesheet Custom Styles */
+
+.timesheet-container {
+	padding: 20px;
+	background-color: #f8f9fa;
+	min-height: 100vh;
+}
+
+.timesheet-header {
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	margin-bottom: 20px;
+}
+
+.timesheet-title {
+	font-size: 24px;
+	font-weight: 600;
+	color: #36414C;
+	margin-bottom: 10px;
+}
+
+.timesheet-period {
+	color: #8d99a6;
+	font-size: 14px;
+	margin-bottom: 20px;
+}
+
+.timesheet-form-section {
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	overflow: hidden;
+}
+
+.timesheet-details-section {
+	padding: 20px;
+}
+
+.timesheet-table-container {
+	overflow-x: auto;
+	border-radius: 8px;
+	border: 1px solid #e9ecef;
+}
+
+.timesheet-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+.timesheet-table th {
+	background-color: #f1f3f4;
+	color: #5f6368;
+	font-weight: 500;
+	padding: 12px 8px;
+	text-align: left;
+	border-bottom: 1px solid #e8eaed;
+	border-right: 1px solid #e8eaed;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.timesheet-table th:first-child {
+	min-width: 200px;
+}
+
+.timesheet-table th:nth-child(2) {
+	min-width: 180px;
+}
+
+.timesheet-table th.day-column {
+	min-width: 80px;
+	text-align: center;
+	font-weight: 600;
+	font-size: 12px;
+}
+
+.timesheet-table th.total-column {
+	min-width: 100px;
+	text-align: center;
+	background-color: #e8f0fe;
+	color: #1a73e8;
+}
+
+.timesheet-table td {
+	padding: 10px 8px;
+	border-bottom: 1px solid #e8eaed;
+	border-right: 1px solid #e8eaed;
+	background: white;
+}
+
+.timesheet-table td:first-child {
+	font-weight: 500;
+}
+
+.timesheet-table td input {
+	width: 100%;
+	padding: 6px 8px;
+	border: 1px solid #dadce0;
+	border-radius: 4px;
+	font-size: 14px;
+	text-align: center;
+	background: white;
+	transition: border-color 0.2s ease;
+}
+
+.timesheet-table td input:focus {
+	outline: none;
+	border-color: #1a73e8;
+	box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.timesheet-table td input:hover {
+	border-color: #5f6368;
+}
+
+.timesheet-table td input[type="number"] {
+	text-align: right;
+}
+
+.timesheet-table td input[readonly] {
+	background-color: #f8f9fa;
+	color: #5f6368;
+	cursor: not-allowed;
+}
+
+.timesheet-table .total-cell {
+	background-color: #f8f9fa;
+	font-weight: 600;
+	color: #1a73e8;
+	text-align: center;
+}
+
+.timesheet-table .project-cell {
+	font-weight: 500;
+}
+
+.timesheet-table .activity-cell {
+	color: #5f6368;
+}
+
+.add-row-button {
+	background-color: #1a73e8;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	margin: 15px 0;
+}
+
+.add-row-button:hover {
+	background-color: #1557b0;
+}
+
+.add-row-button:active {
+	background-color: #0d47a1;
+}
+
+.timesheet-actions {
+	padding: 20px;
+	background: white;
+	border-top: 1px solid #e8eaed;
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
+
+.action-button {
+	padding: 10px 24px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	border: 1px solid transparent;
+}
+
+.btn-secondary {
+	background-color: #f8f9fa;
+	color: #3c4043;
+	border-color: #dadce0;
+}
+
+.btn-secondary:hover {
+	background-color: #f1f3f4;
+	border-color: #c4c7c5;
+}
+
+.btn-primary {
+	background-color: #1a73e8;
+	color: white;
+}
+
+.btn-primary:hover {
+	background-color: #1557b0;
+}
+
+.btn-primary:active {
+	background-color: #0d47a1;
+}
+
+.btn-danger {
+	background-color: #ea4335;
+	color: white;
+}
+
+.btn-danger:hover {
+	background-color: #d33b2c;
+}
+
+.btn-danger:active {
+	background-color: #b3261e;
+}
+
+.form-section {
+	padding: 20px;
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	margin-bottom: 20px;
+}
+
+.field-label {
+	font-weight: 500;
+	color: #3c4043;
+	margin-bottom: 6px;
+	display: block;
+	font-size: 14px;
+}
+
+.form-control {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid #dadce0;
+	border-radius: 4px;
+	font-size: 14px;
+	transition: border-color 0.2s ease;
+	background: white;
+}
+
+.form-control:focus {
+	outline: none;
+	border-color: #1a73e8;
+	box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.form-control:hover {
+	border-color: #5f6368;
+}
+
+.employee-info {
+	display: flex;
+	gap: 20px;
+	align-items: center;
+	padding: 20px;
+	background: #f8f9fa;
+	border-radius: 8px;
+	margin-bottom: 20px;
+}
+
+.employee-field {
+	flex: 1;
+}
+
+.date-range-info {
+	background: white;
+	padding: 15px;
+	border-radius: 6px;
+	border-left: 4px solid #1a73e8;
+	margin: 15px 0;
+}
+
+.date-range-text {
+	font-size: 16px;
+	font-weight: 500;
+	color: #1a73e8;
+}
+
+.total-hours-display {
+	background: #e8f0fe;
+	color: #1a73e8;
+	padding: 15px;
+	border-radius: 6px;
+	text-align: center;
+	font-size: 18px;
+	font-weight: 600;
+	margin: 20px 0;
+}
+
+.empty-state {
+	text-align: center;
+	padding: 40px 20px;
+	color: #5f6368;
+}
+
+.empty-state-icon {
+	font-size: 48px;
+	margin-bottom: 16px;
+	opacity: 0.5;
+}
+
+.empty-state-text {
+	font-size: 16px;
+	margin-bottom: 20px;
+}
+
+.grid-delete-row {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 4px;
+	color: #ea4335;
+	transition: background-color 0.2s ease;
+}
+
+.grid-delete-row:hover {
+	background-color: #fce8e6;
+}
+
+.grid-add-row {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 4px;
+	color: #1a73e8;
+	transition: background-color 0.2s ease;
+}
+
+.grid-add-row:hover {
+	background-color: #e8f0fe;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+	.timesheet-table-container {
+		font-size: 12px;
+	}
+
+	.timesheet-table th,
+	.timesheet-table td {
+		padding: 6px 4px;
+	}
+
+	.timesheet-table th:first-child,
+	.timesheet-table th:nth-child(2) {
+		min-width: 120px;
+	}
+
+	.timesheet-table th.day-column {
+		min-width: 50px;
+		font-size: 10px;
+	}
+
+	.employee-info {
+		flex-direction: column;
+		gap: 15px;
+	}
+
+	.timesheet-actions {
+		flex-direction: column;
+		gap: 8px;
+	}
+}
+
+/* Loading states */
+.timesheet-loading {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.timesheet-loading::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.8);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+/* Custom scrollbar */
+.timesheet-table-container::-webkit-scrollbar {
+	height: 8px;
+}
+
+.timesheet-table-container::-webkit-scrollbar-track {
+	background: #f1f3f4;
+	border-radius: 4px;
+}
+
+.timesheet-table-container::-webkit-scrollbar-thumb {
+	background: #c4c7c5;
+	border-radius: 4px;
+}
+
+.timesheet-table-container::-webkit-scrollbar-thumb:hover {
+	background: #9aa0a6;
+}
+
+/* Animation for new rows */
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.timesheet-table tr:last-child {
+	animation: slideIn 0.3s ease-out;
+}
+
+/* Error states */
+.form-control.error {
+	border-color: #ea4335;
+	box-shadow: 0 0 0 2px rgba(234, 67, 53, 0.2);
+}
+
+.error-message {
+	color: #ea4335;
+	font-size: 12px;
+	margin-top: 4px;
+	display: block;
+}
+
+/* Success states */
+.form-control.success {
+	border-color: #34a853;
+	box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.2);
+}

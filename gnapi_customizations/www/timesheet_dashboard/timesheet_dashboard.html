@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        .timesheet-dashboard {
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .dashboard-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a73e8;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-subtitle {
+            font-size: 16px;
+            color: #5f6368;
+            margin-bottom: 0;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid #1a73e8;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a73e8;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #5f6368;
+            font-weight: 500;
+        }
+
+        .quick-actions {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1557b0;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #34a853;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2d8f3f;
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: #4285f4;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+        }
+
+        .recent-timesheets {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #3c4043;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f0fe;
+        }
+
+        .timesheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .timesheet-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #3c4043;
+            border-bottom: 2px solid #e8eaed;
+        }
+
+        .timesheet-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e8eaed;
+            vertical-align: middle;
+        }
+
+        .timesheet-row {
+            transition: background-color 0.2s ease;
+        }
+
+        .timesheet-row:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-draft {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-submitted {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-cancelled {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #5f6368;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #5f6368;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .timesheet-table {
+                font-size: 14px;
+            }
+
+            .timesheet-table th,
+            .timesheet-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="timesheet-dashboard">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">📅 Weekly Timesheet Dashboard</h1>
+            <p class="dashboard-subtitle">Manage and track your weekly timesheets efficiently</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_timesheets or 0 }}</div>
+                <div class="stat-label">Total Timesheets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ (stats.total_hours or 0) | round(1) }}</div>
+                <div class="stat-label">Total Hours Logged</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ (stats.avg_hours or 0) | round(1) }}</div>
+                <div class="stat-label">Average Hours/Week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.pending_approvals or 0 }}</div>
+                <div class="stat-label">Pending Approvals</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3 class="section-title">Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="/app/weekly-timesheet/new" class="action-btn btn-primary">
+                    ➕ Create New Timesheet
+                </a>
+                <a href="/app/weekly-timesheet" class="action-btn btn-secondary">
+                    📋 View All Timesheets
+                </a>
+                <button onclick="exportData()" class="action-btn btn-info">
+                    📊 Export Reports
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Timesheets -->
+        <div class="recent-timesheets">
+            <h3 class="section-title">Recent Timesheets</h3>
+            <div id="recent-timesheets-container">
+                {% if recent_timesheets %}
+                <table class="timesheet-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Period</th>
+                            <th>Total Hours</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for ts in recent_timesheets %}
+                    <tr class="timesheet-row">
+                        <td>
+                            <strong>{{ ts.employee_name or 'N/A' }}</strong><br>
+                            <small style="color: #8d99a6;">{{ ts.name }}</small>
+                        </td>
+                        <td>
+                            {{ ts.from_date }}<br>
+                            <small style="color: #8d99a6;">to {{ ts.to_date }}</small>
+                        </td>
+                        <td>
+                            <span style="font-weight: 600; color: #1a73e8;">{{ ts.total_hours or 0 }}h</span>
+                        </td>
+                        <td>
+                            <span class="status-badge {{ 'status-submitted' if ts.status == 'Submitted' else 'status-draft' }}">
+                                {{ ts.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/app/weekly-timesheet/{{ ts.name }}" class="action-btn btn-primary" style="padding: 4px 12px; font-size: 12px;">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h4>No Timesheets Found</h4>
+                    <p>Start by creating your first weekly timesheet</p>
+                    <a href="/app/weekly-timesheet/new" class="action-btn btn-primary">
+                        Create First Timesheet
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Export data function
+        function exportData() {
+            frappe.call({
+                method: 'gnapi_customizations.api.utils.export_timesheet_data',
+                args: {
+                    employee: frappe.session.user,
+                    from_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+                    to_date: new Date().toISOString().split('T')[0],
+                    format: 'csv'
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        // Create download link
+                        const blob = new Blob([r.message.data], {type: 'text/plain'});
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = r.message.filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+
+                        frappe.show_alert({
+                            message: 'Export completed successfully!',
+                            indicator: 'green'
+                        });
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
