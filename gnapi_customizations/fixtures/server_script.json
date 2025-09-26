@@ -220,7 +220,7 @@
   "event_type_field": null,
   "event_type_value": "Custom Timesheet",
   "external_service": null,
-  "method": "get_list_context",
+  "method": "setup",
   "modified": "2025-09-25 19:25:00.000000",
   "name": "Filter Custom Timesheet List for Employee Role",
   "priority": 0,
