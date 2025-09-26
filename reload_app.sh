@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔄 Reloading gnapi_customizations app with local changes..."
+echo "🔄 Updating gnapi_customizations app with local changes..."
 
 # Navigate to docker directory
 cd "$(dirname "$0")/docker"
@@ -9,26 +9,26 @@ cd "$(dirname "$0")/docker"
 docker-compose exec frappe bash -c "
     cd /home/frappe/frappe-bench
     
-    echo '📦 Uninstalling gnapi_customizations app...'
-    bench --site mysite.localhost uninstall-app gnapi_customizations --yes --no-backup
+    echo '📁 Syncing local changes to app directory...'
+    # Copy local changes to the app directory
+    if [ -d '/workspace/gnapi_customizations' ]; then
+        cp -r /workspace/gnapi_customizations/* /home/frappe/frappe-bench/apps/gnapi_customizations/
+        echo '✅ Local changes synced to app directory'
+    else
+        echo '⚠️ Local gnapi_customizations directory not found in /workspace'
+    fi
     
-    echo '🗑️ Removing app from bench...'
-    bench remove-app gnapi_customizations
-    
-    echo '📁 Adding local app to bench...'
-    bench get-app /home/frappe/frappe-bench/apps/gnapi_customizations
-    
-    echo '⚙️ Installing app with local changes...'
-    bench --site mysite.localhost install-app gnapi_customizations --force
-    
-    echo '🔧 Running migration...'
+    echo '🔧 Running migration to apply changes...'
     bench --site mysite.localhost migrate
     
     echo '🧹 Clearing cache...'
     bench --site mysite.localhost clear-cache
     
-    echo '✅ App reloaded successfully with local changes!'
+    echo '🔄 Restarting services...'
+    bench restart
+    
+    echo '✅ App updated successfully with local changes!'
 "
 
-echo "🚀 gnapi_customizations app has been reloaded with your local changes!"
+echo "🚀 gnapi_customizations app has been updated with your local changes!"
 echo "📱 Access your site at: http://localhost:8000"
