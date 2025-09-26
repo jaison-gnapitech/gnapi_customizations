@@ -303,7 +303,7 @@
   "name": "Override Timesheet Navigation",
   "priority": 0,
   "reference_doctype": "Timesheet",
-  "script": "# Override Timesheet navigation to redirect to Custom Timesheet\n# This script will redirect any Timesheet access to Custom Timesheet\n\n# Check if this is a Timesheet request\nif frappe.local.request and frappe.local.request.path:\n    if '/app/timesheet' in frappe.local.request.path or '/app/Timesheet' in frappe.local.request.path:\n        # Redirect to Custom Timesheet\n        frappe.local.response['type'] = 'redirect'\n        frappe.local.response['location'] = '/app/custom-timesheet'\n        frappe.local.response['status'] = 302",
+  "script": "# Override Timesheet navigation to redirect to Custom Timesheet\n# This script will redirect any Timesheet access to Custom Timesheet\n\n# Check if this is a Timesheet request\nif frappe.local.request and frappe.local.request.path:\n    if '/app/timesheet' in frappe.local.request.path or '/app/Timesheet' in frappe.local.request.path:\n        # Redirect to Custom Timesheet\n        frappe.local.response['type'] = 'redirect'\n        frappe.local.response['location'] = '/app/custom-timesheet'\n        frappe.local.response['status'] = 302\n        \n# Also handle any direct Timesheet doctype access\nif frappe.local.request and frappe.local.request.path:\n    if '/app/timesheet' in frappe.local.request.path or '/app/Timesheet' in frappe.local.request.path:\n        # Force redirect to Custom Timesheet\n        frappe.local.response['type'] = 'redirect'\n        frappe.local.response['location'] = '/app/custom-timesheet'\n        frappe.local.response['status'] = 302",
   "script_type": "DocType Event",
   "script_type_meta": null,
   "script_type_meta_value": null,
