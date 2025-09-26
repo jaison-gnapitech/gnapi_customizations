@@ -1,13 +1,32 @@
 #!/bin/bash
 
-echo "🔄 Updating gnapi_customizations app with latest code..."
+# Advanced reload script with git operations
+# Usage: ./reload_app_advanced.sh [branch_name]
+
+BRANCH=${1:-main}
+
+echo "🔄 Updating gnapi_customizations app with latest code from branch: $BRANCH"
 
 # Navigate to project root
 cd "$(dirname "$0")"
 
+# Check if we're in a git repository
+if [ ! -d ".git" ]; then
+    echo "❌ Not a git repository. Please initialize git first."
+    exit 1
+fi
+
+# Check git status
+echo "📊 Checking git status..."
+git status --porcelain
+
 # Pull latest code from git
-echo "📥 Pulling latest code from git..."
-git pull origin main
+echo "📥 Pulling latest code from git branch: $BRANCH"
+if git pull origin $BRANCH; then
+    echo "✅ Successfully pulled latest code"
+else
+    echo "⚠️ Git pull failed. Continuing with local changes..."
+fi
 
 # Navigate to docker directory
 cd docker
@@ -39,3 +58,4 @@ docker-compose exec frappe bash -c "
 
 echo "🚀 gnapi_customizations app has been updated with latest code!"
 echo "📱 Access your site at: http://localhost:8000"
+echo "🌿 Branch: $BRANCH"
