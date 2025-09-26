@@ -11,7 +11,8 @@ fixtures = [
         {"doctype": "DocType", "filters": [["module", "=", "Gnapi Customizations"]]},
         {"doctype": "Social Login Key", "filters": [["provider_name", "in", ["Office 365"]]]},
         {"doctype": "Property Setter", "filters": [["doc_type", "=", "Employee"]]},
-        {"doctype": "Server Script", "filters": [["module", "=", "Gnapi Customizations"]]}
+        {"doctype": "Server Script", "filters": [["module", "=", "Gnapi Customizations"]]},
+        {"doctype": "Client Script", "filters": [["module", "=", "Gnapi Customizations"]]}
 ]
 # Apps
 # ------------------
@@ -34,7 +35,7 @@ fixtures = [
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/gnapi_customizations/css/gnapi_customizations.css"
-# app_include_js = "/assets/gnapi_customizations/js/gnapi_customizations.js"
+app_include_js = "/assets/gnapi_customizations/js/custom_timesheet_navigation.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/gnapi_customizations/css/gnapi_customizations.css"
