@@ -185,6 +185,7 @@
     "oldfieldname": null,
     "oldfieldtype": null,
     "options": "Draft\nSubmitted\nApproved\nRejected",
+    "depends_on": null,
     "permlevel": 0,
     "placeholder": null,
     "precision": "",
