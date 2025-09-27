@@ -25,15 +25,16 @@
     function initializeDirectOverride() {
         // Override frappe.set_route immediately
         if (typeof frappe !== 'undefined' && frappe.set_route) {
-        const originalSetRoute = frappe.set_route;
-        frappe.set_route = function(doctype, name, filters) {
-            if (doctype === 'Timesheet' || doctype === 'timesheet') {
-                console.log('Direct Timesheet Override: Intercepted frappe.set_route for Timesheet, redirecting to Custom Timesheet');
-                return originalSetRoute.call(this, 'Custom Timesheet', name, filters);
-            }
-            return originalSetRoute.apply(this, arguments);
-        };
-        console.log('Direct Timesheet Override: frappe.set_route overridden');
+            const originalSetRoute = frappe.set_route;
+            frappe.set_route = function(doctype, name, filters) {
+                if (doctype === 'Timesheet' || doctype === 'timesheet') {
+                    console.log('Direct Timesheet Override: Intercepted frappe.set_route for Timesheet, redirecting to Custom Timesheet');
+                    return originalSetRoute.call(this, 'Custom Timesheet', name, filters);
+                }
+                return originalSetRoute.apply(this, arguments);
+            };
+            console.log('Direct Timesheet Override: frappe.set_route overridden');
+        }
     }
     
     // Override any Timesheet links immediately
