@@ -11,8 +11,7 @@ fixtures = [
         {"doctype": "DocType", "filters": [["module", "=", "Gnapi Customizations"]]},
         {"doctype": "Social Login Key", "filters": [["provider_name", "in", ["Office 365"]]]},
         {"doctype": "Property Setter", "filters": [["doc_type", "=", "Employee"]]},
-        {"doctype": "Server Script", "filters": [["module", "=", "Gnapi Customizations"]]},
-        {"doctype": "Client Script", "filters": [["module", "=", "Gnapi Customizations"]]}
+        {"doctype": "Server Script", "filters": [["module", "=", "Gnapi Customizations"]]}
 ]
 # Apps
 # ------------------
