@@ -1,4 +1,4 @@
-// Timesheet Navigation Override - Direct Implementation
+// Timesheet Navigation Override v2 - Direct Implementation
 // This script will override Timesheet navigation to redirect to Custom Timesheet
 
 console.log('Timesheet Navigation Override Script Loading...');

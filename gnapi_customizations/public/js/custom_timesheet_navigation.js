@@ -1,4 +1,4 @@
-// Custom Timesheet Navigation Override
+// Custom Timesheet Navigation Override v2
 // This script overrides the default Timesheet navigation to show Custom Timesheet
 
 // Wait for DOM and Frappe to be available
