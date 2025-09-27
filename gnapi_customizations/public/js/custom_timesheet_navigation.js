@@ -1,8 +1,24 @@
 // Custom Timesheet Navigation Override
 // This script overrides the default Timesheet navigation to show Custom Timesheet
 
-frappe.ready(function() {
-    console.log('Custom Timesheet Navigation Override loaded');
+// Wait for DOM and Frappe to be available
+function waitForInitialization() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waitForInitialization);
+        return;
+    }
+    
+    // Wait for Frappe to be available
+    if (typeof frappe !== 'undefined' && typeof frappe.set_route === 'function') {
+        console.log('Custom Timesheet Navigation Override loaded');
+        initializeNavigationOverride();
+    } else {
+        // Wait a bit and try again
+        setTimeout(waitForInitialization, 100);
+    }
+}
+
+function initializeNavigationOverride() {
     
     // Function to override Timesheet links
     function overrideTimesheetLinks() {
@@ -96,4 +112,7 @@ frappe.ready(function() {
     $(document).on('route-change', function() {
         setTimeout(overrideTimesheetLinks, 500);
     });
-});
+}
+
+// Start waiting for initialization
+waitForInitialization();

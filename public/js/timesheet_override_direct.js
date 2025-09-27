@@ -6,8 +6,25 @@
     
     console.log('Direct Timesheet Override: Script executing...');
     
-    // Override frappe.set_route immediately
-    if (typeof frappe !== 'undefined' && frappe.set_route) {
+    // Wait for DOM and Frappe to be available
+    function waitForInitialization() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', waitForInitialization);
+            return;
+        }
+        
+        if (typeof frappe !== 'undefined' && frappe.set_route) {
+            console.log('Direct Timesheet Override: Frappe available, initializing...');
+            initializeDirectOverride();
+        } else {
+            // Wait a bit and try again
+            setTimeout(waitForInitialization, 100);
+        }
+    }
+    
+    function initializeDirectOverride() {
+        // Override frappe.set_route immediately
+        if (typeof frappe !== 'undefined' && frappe.set_route) {
         const originalSetRoute = frappe.set_route;
         frappe.set_route = function(doctype, name, filters) {
             if (doctype === 'Timesheet' || doctype === 'timesheet') {
@@ -101,6 +118,9 @@
     $(document).on('page-change', function() {
         setTimeout(overrideTimesheetLinks, 500);
     });
+    
+    // Start waiting for initialization
+    waitForInitialization();
     
     console.log('Direct Timesheet Override: Script execution complete');
 })();

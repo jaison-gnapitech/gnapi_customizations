@@ -3,9 +3,24 @@
 
 console.log('Timesheet Navigation Override Script Loading...');
 
-// Wait for Frappe to be ready
-frappe.ready(function() {
-    console.log('Timesheet Navigation Override: Frappe ready, initializing...');
+// Wait for DOM and Frappe to be available
+function waitForInitialization() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waitForInitialization);
+        return;
+    }
+    
+    // Wait for Frappe to be available
+    if (typeof frappe !== 'undefined' && typeof frappe.set_route === 'function') {
+        console.log('Timesheet Navigation Override: Frappe ready, initializing...');
+        initializeNavigationOverride();
+    } else {
+        // Wait a bit and try again
+        setTimeout(waitForInitialization, 100);
+    }
+}
+
+function initializeNavigationOverride() {
     
     // Function to override Timesheet navigation
     function overrideTimesheetNavigation() {
@@ -114,6 +129,9 @@ frappe.ready(function() {
     });
     
     console.log('Timesheet Navigation Override: Initialization complete');
-});
+}
+
+// Start waiting for initialization
+waitForInitialization();
 
 console.log('Timesheet Navigation Override Script Loaded');
