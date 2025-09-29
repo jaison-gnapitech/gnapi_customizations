@@ -15,7 +15,7 @@
         }
     }
 
-    // Override frappe.set_route to safely handle only timesheet routes
+    // Override frappe.set_route to safely handle routes
     function overrideSetRoute() {
         if (frappe._safeRouteOverridden) return;
         frappe._safeRouteOverridden = true;
@@ -23,20 +23,44 @@
         const originalSetRoute = frappe.set_route;
 
         frappe.set_route = function(doctype, name, filters) {
-            // Clean undefined or invalid parameters before processing
-            if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
-                // Ensure no undefined parameters are passed
-                name = name && name !== 'undefined' ? name : '';
-                filters = filters && filters !== 'undefined' ? filters : '';
+            try {
+                doctype = doctype || null;
+                name = name || null;
+                filters = filters || null;
+                // --- Check if doctype, name, and filters are valid ---
+                if (doctype === undefined || doctype === null || name === undefined || name === null) {
+                    console.warn('Invalid route parameters detected, skipping route change:', doctype, name, filters);
+                    return;
+                }
 
-                console.log('Timesheet route detected, redirecting to Custom Timesheet:', doctype, name, filters);
+                // Prevent incorrect routing: Ensure doctype and name are valid strings or array
+                if (Array.isArray(doctype)) {
+                    if (typeof doctype[0] !== 'string') {
+                        console.warn('Invalid route detected in array form, skipping route change:', doctype);
+                        // return;
+                    }
+                } else if (typeof doctype !== 'string') {
+                    console.warn('Invalid doctype detected, skipping route change:', doctype);
+                    // return;
+                }
 
-                // Redirect to Custom Timesheet if valid
-                return originalSetRoute.apply(this, ['Custom Timesheet', name, filters]);
+                // --- Only override "timesheet" routes ---
+                if (Array.isArray(doctype) && doctype[1] && doctype[1].toLowerCase() === 'timesheet') {
+                    doctype[1] = 'Custom Timesheet';
+                } else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
+                    doctype = 'Custom Timesheet';
+                }
+
+                if (name.toLowerCase() === 'timesheet') {
+                    name = 'Custom Timesheet';
+                }
+
+                // --- Call original set_route with validated values ---
+                return originalSetRoute.apply(this, [doctype, name, filters]);
+
+            } catch (err) {
+                console.error('Error in route override:', err);
             }
-
-            // If it's not a timesheet route, just pass through as normal
-            return originalSetRoute.apply(this, [doctype, name, filters]);
         };
     }
 
