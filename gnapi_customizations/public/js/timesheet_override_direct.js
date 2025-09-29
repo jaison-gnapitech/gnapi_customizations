@@ -22,7 +22,8 @@
 
         // If the user navigates to `/app/timesheet`, redirect to `/app/custom-timesheet`
         if (currentRoute === '/app/timesheet') {
-            window.location.href = '/app/custom-timesheet';
+            console.log('Redirecting to custom timesheet...');
+            window.location.href = '/app/custom-timesheet'; // Directly change the URL
         }
     }
 
@@ -37,22 +38,17 @@
             console.warn("route parameters detected:", doctype, name, filters);
 
             try {
-                // Set empty strings for undefined parameters
-                doctype = doctype || "";
-                name = name || "";
-                filters = filters || "";
-
-                // --- Only override "timesheet" routes ---
+                // If the route is 'timesheet', change it to 'Custom Timesheet'
                 if (
                     (Array.isArray(doctype) && doctype[1] && doctype[1].toLowerCase() === "timesheet") ||
                     (typeof doctype === "string" && doctype.toLowerCase() === "timesheet")
                 ) {
                     console.log("Overriding 'timesheet' route to 'Custom Timesheet'");
-                    doctype = "Custom Timesheet";
+                    doctype = "Custom Timesheet"; // Change 'timesheet' to 'Custom Timesheet'
                 }
 
-                // Change "name" to "Custom Timesheet" if it matches "timesheet"
-                if (name.toLowerCase() === "timesheet") {
+                // Handle name (e.g., if 'timesheet' is used, convert to 'Custom Timesheet')
+                if (name && name.toLowerCase() === "timesheet") {
                     name = "Custom Timesheet";
                 }
 
@@ -64,8 +60,13 @@
                 // Ensure there is no trailing slash
                 const finalRoute = route.replace(/\/$/, "");
 
-                // --- Call the original set_route with validated and cleaned parameters ---
-                return originalSetRoute.apply(this, [finalRoute]);
+                // If the route is still pointing to 'timesheet', redirect directly
+                if (finalRoute === 'timesheet') {
+                    window.location.href = '/app/custom-timesheet'; // Directly change the URL
+                } else {
+                    // --- Call the original set_route with validated and cleaned parameters ---
+                    return originalSetRoute.apply(this, [finalRoute]);
+                }
             } catch (err) {
                 console.error("Error in route override:", err);
             }
