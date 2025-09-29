@@ -12,24 +12,25 @@ git pull origin main
 # Navigate to docker directory
 cd docker
 
+# Copy the entire gnapi_customizations directory to the container
+echo "📁 Copying local changes to container..."
+docker-compose exec frappe bash -c "mkdir -p /home/frappe/frappe-bench/apps/gnapi_customizations"
+
+# Copy files from host to container using docker cp
+echo "📁 Copying files from host to container..."
+docker cp ../gnapi_customizations/. docker-frappe-1:/home/frappe/frappe-bench/apps/gnapi_customizations/
+
+# Verify and copy JavaScript files individually
+echo "📁 Ensuring JavaScript files are copied..."
+docker cp ../gnapi_customizations/public/js/custom_timesheet_navigation.js docker-frappe-1:/home/frappe/frappe-bench/apps/gnapi_customizations/public/js/custom_timesheet_navigation.js
+docker cp ../gnapi_customizations/public/js/timesheet_navigation_override.js docker-frappe-1:/home/frappe/frappe-bench/apps/gnapi_customizations/public/js/timesheet_navigation_override.js
+docker cp ../gnapi_customizations/public/js/timesheet_override_direct.js docker-frappe-1:/home/frappe/frappe-bench/apps/gnapi_customizations/public/js/timesheet_override_direct.js
+
+echo "✅ Local changes copied to container"
+
 # Execute commands inside the Frappe container
 docker-compose exec frappe bash -c "
     cd /home/frappe/frappe-bench
-    
-    echo '📥 Pulling latest code from git repository...'
-    # Navigate to the app directory and pull from git
-    if [ -d 'apps/gnapi_customizations' ]; then
-        cd apps/gnapi_customizations
-        git pull origin main
-        echo '✅ Latest code pulled from git repository'
-        cd /home/frappe/frappe-bench
-    else
-        echo '⚠️ gnapi_customizations app directory not found'
-        echo '📁 Creating app directory and cloning from git...'
-        # Clone the repository if it doesn't exist
-        git clone https://github.com/jaison-gnapitech/gnapi_customizations.git apps/gnapi_customizations
-        echo '✅ Repository cloned from git'
-    fi
     
     echo '🔧 Running migration to apply changes...'
     bench --site mysite.localhost migrate
