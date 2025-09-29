@@ -1,4 +1,4 @@
-// Direct Timesheet Override - Fully Scoped
+// Direct Timesheet Override - Fully Scoped & Safe
 // Only redirect /app/timesheet → /app/custom-timesheet
 
 (function() {
@@ -29,23 +29,22 @@
         const originalSetRoute = frappe.set_route;
         frappe.set_route = function(doctype, name, filters) {
             try {
-                // Handle array-style route: ['List', 'Timesheet']
+                // Array-style route: ['List', 'Timesheet']
                 if (Array.isArray(doctype) && doctype.length > 1 && typeof doctype[1] === 'string') {
                     if (doctype[1].toLowerCase() === 'timesheet') {
-                        console.log('Redirecting Timesheet → Custom Timesheet (array call)');
                         doctype[1] = 'Custom Timesheet';
                     }
                 }
-                // Handle Form route: ('Form', 'Timesheet', ...)
+                // Form route: ('Form', 'Timesheet', ...)
                 else if (typeof name === 'string' && name.toLowerCase() === 'timesheet') {
-                    console.log('Redirecting Timesheet → Custom Timesheet (name argument)');
                     name = 'Custom Timesheet';
                 }
-                // Handle string-style doctype: 'Timesheet'
+                // String-style doctype: 'Timesheet'
                 else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
-                    console.log('Redirecting Timesheet → Custom Timesheet (string doctype)');
                     doctype = 'Custom Timesheet';
                 }
+
+                // Do not pass URLs as doctype
             } catch (err) {
                 console.error('Timesheet override error:', err);
             }
@@ -63,8 +62,6 @@
             if (text === 'timesheet' || href === '/app/timesheet' || dataLink === '/app/timesheet') {
                 e.preventDefault();
                 e.stopPropagation();
-
-                console.log('Intercepted Timesheet click → Custom Timesheet');
                 frappe.set_route('List', 'Custom Timesheet');
                 return false;
             }
