@@ -28,6 +28,16 @@
         // --- Override frappe.set_route safely ---
         const originalSetRoute = frappe.set_route;
         frappe.set_route = function(doctype, name, filters) {
+            // Debug logging to identify undefined parameters
+            console.log('frappe.set_route called with:', {
+                doctype: doctype,
+                name: name,
+                filters: filters,
+                doctypeType: typeof doctype,
+                nameType: typeof name,
+                filtersType: typeof filters
+            });
+            
             try {
                 if (Array.isArray(doctype)) {
                     // Only convert strings
@@ -56,9 +66,18 @@
             const dataLink = ($this.attr('data-link') || '').toLowerCase();
             const text = ($this.text() || '').trim().toLowerCase();
 
+            console.log('Link clicked:', {
+                href: $this.attr('href'),
+                dataLink: $this.attr('data-link'),
+                text: text,
+                originalHref: href,
+                originalDataLink: dataLink
+            });
+
             if (text === 'timesheet' || href === '/app/timesheet' || dataLink === '/app/timesheet') {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('Redirecting to Custom Timesheet');
                 frappe.set_route('List', 'Custom Timesheet');
                 return false;
             }
