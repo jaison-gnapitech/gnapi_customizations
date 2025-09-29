@@ -21,57 +21,35 @@
     }
 
     function initializeOverride() {
-        // Prevent multiple overrides
         if (frappe._timesheetRouteOverridden) return;
         frappe._timesheetRouteOverridden = true;
 
-        // --- Override frappe.set_route safely ---
         const originalSetRoute = frappe.set_route;
+
+        // --- Override frappe.set_route safely ---
         frappe.set_route = function(doctype, name, filters) {
-            // Only intercept and modify Timesheet-related routes
-            let modifiedDoctype = doctype;
-            let modifiedName = name;
-            let modifiedFilters = filters;
-            
             try {
-                // Check if this is a Timesheet route that needs to be redirected
-                const isTimesheetRoute = (() => {
-                    if (Array.isArray(doctype)) {
-                        return doctype.length > 0 && typeof doctype[0] === 'string' && 
-                               doctype[0].toLowerCase() === 'timesheet';
-                    }
-                    return typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet';
-                })();
-                
-                const isTimesheetName = typeof name === 'string' && name.toLowerCase() === 'timesheet';
-                
-                // Only modify if it's actually a Timesheet route
-                if (isTimesheetRoute || isTimesheetName) {
-                    console.log('Timesheet route detected, redirecting to Custom Timesheet:', {
-                        doctype: doctype,
-                        name: name,
-                        filters: filters
-                    });
-                    
-                    if (Array.isArray(doctype)) {
-                        modifiedDoctype = ['Custom Timesheet'];
-                    } else {
-                        modifiedDoctype = 'Custom Timesheet';
-                    }
-                    
-                    if (isTimesheetName) {
-                        modifiedName = 'Custom Timesheet';
+                // Array style: ['List', 'Timesheet']
+                if (Array.isArray(doctype) && typeof doctype[1] === 'string') {
+                    if (doctype[1].toLowerCase() === 'timesheet') {
+                        doctype[1] = 'Custom Timesheet';
                     }
                 }
-                
+                // String-style doctype
+                else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
+                    doctype = 'Custom Timesheet';
+                }
+                // Form route: name is 'Timesheet'
+                if (typeof name === 'string' && name.toLowerCase() === 'timesheet') {
+                    name = 'Custom Timesheet';
+                }
             } catch (err) {
                 console.error('Timesheet override error:', err);
             }
-        
-            // Pass through all routes unchanged, only modify Timesheet routes
-            return originalSetRoute.apply(this, [modifiedDoctype, modifiedName, modifiedFilters]);
+
+            return originalSetRoute.apply(this, [doctype, name, filters]);
         };
-        
+
         // --- Intercept Timesheet clicks only ---
         $(document).on('click.timesheet', 'a', function(e) {
             const $this = $(this);
