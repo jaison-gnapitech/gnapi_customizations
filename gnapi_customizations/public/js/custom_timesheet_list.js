@@ -38,19 +38,5 @@ $(document).ready(function () {
 
 	// Initialize enhancements
 	addCustomFilters();
-	enhanceListView();
 	addCustomColumns();
-
-	// Re-run enhancements on route change
-	$(document).on("page-change", function () {
-		setTimeout(function () {
-			if (
-				frappe.route &&
-				frappe.route[0] === "List" &&
-				frappe.route[1] === "Custom Timesheet"
-			) {
-				enhanceListView();
-			}
-		}, 500);
-	});
 });
