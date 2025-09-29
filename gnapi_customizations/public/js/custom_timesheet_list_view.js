@@ -8,11 +8,6 @@ frappe.listview_settings['Custom Timesheet'] = {
     // onload method to initialize the list view and add buttons
     onload: function(listview) {
         console.log('Custom Timesheet List View: Loading...');
-        
-        // Add "New Timesheet" button to the top of the list view
-        listview.page.add_inner_button("New Timesheet", function() {
-            frappe.new_doc('Custom Timesheet'); // Open a new document form for 'Custom Timesheet'
-        });
 
         // Add custom filters
         listview.page.add_inner_button("Filter by Status", function() {
