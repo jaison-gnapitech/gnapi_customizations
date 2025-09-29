@@ -40,8 +40,8 @@
             
             try {
                 if (Array.isArray(doctype)) {
-                    // Only convert strings
-                    if (typeof doctype[0] === 'string' && doctype[0].toLowerCase() === 'timesheet') {
+                    // Handle array case - check if first element is a string and equals 'timesheet'
+                    if (doctype.length > 0 && typeof doctype[0] === 'string' && doctype[0].toLowerCase() === 'timesheet') {
                         doctype[0] = 'Custom Timesheet';
                     }
                 } else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
@@ -56,7 +56,12 @@
                 console.error('Timesheet override error:', err);
             }
         
-            return originalSetRoute.apply(this, [doctype, name, filters]);
+            // Ensure we don't pass undefined values that could cause URL issues
+            const safeDoctype = doctype;
+            const safeName = name || '';
+            const safeFilters = filters || {};
+            
+            return originalSetRoute.apply(this, [safeDoctype, safeName, safeFilters]);
         };
         
         // --- Intercept Timesheet clicks only ---
