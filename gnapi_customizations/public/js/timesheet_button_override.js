@@ -3,23 +3,22 @@
 
 	// Function to override the Timesheet button behavior
 	function overrideTimesheetButton() {
-		// Wait for Frappe to be ready
-		if (typeof frappe !== "undefined") {
-			// Identify the Timesheet button (Assuming it's a link or button)
-			const timesheetButton = document.querySelector('[data-label="Timesheet"]');
+		// Wait for the Timesheet button to be available
+		const timesheetButton = document.querySelector('[data-label="Timesheet"]'); // Adjust this selector
 
-			if (timesheetButton) {
-				console.log("Timesheet button detected, overriding behavior.");
+		if (timesheetButton) {
+			console.log("Timesheet button detected, overriding behavior.");
 
-				// Override the default click behavior of the Timesheet button
-				timesheetButton.addEventListener("click", function (event) {
-					// Prevent default behavior (i.e., navigating to /app/timesheet)
-					event.preventDefault();
+			// Override the default click behavior of the Timesheet button
+			timesheetButton.addEventListener("click", function (event) {
+				// Prevent default behavior (i.e., navigating to /app/timesheet)
+				event.preventDefault();
 
-					// Redirect to /app/custom-timesheet directly
-					window.location.href = "/app/custom-timesheet";
-				});
-			}
+				// Redirect to /app/custom-timesheet directly
+				window.location.href = "/app/custom-timesheet";
+			});
+		} else {
+			console.log("Timesheet button not found. Retrying...");
 		}
 	}
 
@@ -31,7 +30,8 @@
 		}
 
 		if (typeof frappe !== "undefined") {
-			overrideTimesheetButton(); // Run the function to override the Timesheet button click
+			// Check for the button after Frappe is ready
+			setInterval(overrideTimesheetButton, 1000); // Check every second until the button is available
 		} else {
 			setTimeout(waitForFrappe, 100);
 		}
