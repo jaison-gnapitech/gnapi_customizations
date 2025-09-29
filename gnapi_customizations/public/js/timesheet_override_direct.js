@@ -26,13 +26,26 @@
         if (frappe._timesheetRouteOverridden) return;
         frappe._timesheetRouteOverridden = true;
 
-        // --- Override frappe.set_route ---
+        // --- Override frappe.set_route safely ---
         const originalSetRoute = frappe.set_route;
         frappe.set_route = function(doctype, name, filters) {
-            if (doctype && doctype.toLowerCase() === 'timesheet') {
-                console.log('Redirecting Timesheet → Custom Timesheet');
-                return originalSetRoute.call(this, 'Custom Timesheet', name, filters);
+            try {
+                // Handle array call: ['List', 'Timesheet']
+                if (Array.isArray(doctype)) {
+                    if (doctype[1] && typeof doctype[1] === 'string' && doctype[1].toLowerCase() === 'timesheet') {
+                        console.log('Redirecting Timesheet → Custom Timesheet (array call)');
+                        doctype[1] = 'Custom Timesheet';
+                    }
+                } 
+                // Handle string call: 'Timesheet'
+                else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
+                    console.log('Redirecting Timesheet → Custom Timesheet (string call)');
+                    doctype = 'Custom Timesheet';
+                }
+            } catch (err) {
+                console.error('Timesheet override error:', err);
             }
+
             return originalSetRoute.apply(this, arguments);
         };
 
