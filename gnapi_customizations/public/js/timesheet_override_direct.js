@@ -55,8 +55,10 @@
 					name = "Custom Timesheet";
 				}
 
-				// Concatenate doctype, name, and filters ensuring empty strings come last
-				const route = [doctype, name, filters].filter(Boolean).concat(["", ""]).join("/");
+				// Concatenate doctype, name, and filters ensuring empty strings come last and no trailing slash
+				const route = [doctype, name, filters]
+					.filter(Boolean) // Remove any falsy values (like empty strings)
+					.join("/"); // Join parts with "/"
 
 				// --- Call the original set_route with validated and cleaned parameters ---
 				return originalSetRoute.apply(this, [route]);
