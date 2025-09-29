@@ -1,4 +1,4 @@
-// Direct Timesheet Override - Updated & Optimized
+// Direct Timesheet Override - Fully Safe & Optimized
 // Redirect all Timesheet navigation to Custom Timesheet
 
 (function() {
@@ -31,8 +31,8 @@
         frappe.set_route = function(doctype, name, filters) {
             try {
                 // Handle array call: ['List', 'Timesheet']
-                if (Array.isArray(doctype)) {
-                    if (doctype[1] && typeof doctype[1] === 'string' && doctype[1].toLowerCase() === 'timesheet') {
+                if (Array.isArray(doctype) && doctype.length > 1) {
+                    if (typeof doctype[1] === 'string' && doctype[1].toLowerCase() === 'timesheet') {
                         console.log('Redirecting Timesheet → Custom Timesheet (array call)');
                         doctype[1] = 'Custom Timesheet';
                     }
