@@ -24,13 +24,16 @@
 
 		frappe.set_route = function (doctype, name, filters) {
 			console.warn("route parameters detected:", doctype, name, filters);
+
 			try {
+				// Set empty strings for undefined parameters
 				doctype = doctype || "";
 				name = name || "";
 				filters = filters || "";
 
 				// Prevent incorrect routing: Ensure doctype and name are valid strings or array
 				if (Array.isArray(doctype)) {
+					// Add additional logic if needed for array-style routes
 				} else if (typeof doctype !== "string") {
 					console.warn("Invalid doctype detected, skipping route change:", doctype);
 				}
@@ -46,11 +49,23 @@
 					doctype = "Custom Timesheet";
 				}
 
+				// Change "name" to Custom Timesheet if it matches "timesheet"
 				if (name.toLowerCase() === "timesheet") {
 					name = "Custom Timesheet";
 				}
 
-				// --- Call original set_route with validated values ---
+				// --- Remove trailing slashes from URL if doctype or name is empty ---
+				if (doctype === "") {
+					doctype = undefined; // Removing empty doctype
+				}
+				if (name === "") {
+					name = undefined; // Removing empty name
+				}
+
+				// Construct the URL with the new doctype and name
+				let route = [doctype, name].filter(Boolean).join("/"); // Join only valid parts
+
+				// --- Call original set_route with validated and cleaned parameters ---
 				return originalSetRoute.apply(this, [doctype, name, filters]);
 			} catch (err) {
 				console.error("Error in route override:", err);
