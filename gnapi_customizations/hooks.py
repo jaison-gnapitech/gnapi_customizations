@@ -11,7 +11,8 @@ fixtures = [
         {"doctype": "DocType", "filters": [["module", "=", "Gnapi Customizations"]]},
         {"doctype": "Social Login Key", "filters": [["provider_name", "in", ["Office 365"]]]},
         {"doctype": "Property Setter", "filters": [["doc_type", "=", "Employee"]]},
-        {"doctype": "Server Script", "filters": [["module", "=", "Gnapi Customizations"]]}
+        {"doctype": "Server Script", "filters": [["module", "=", "Gnapi Customizations"]]},
+        {"doctype": "Custom Timesheet", "filters": [["name", "in", ["TS-2024-001", "TS-2024-002", "TS-2024-003"]]]}
 ]
 # Apps
 # ------------------
@@ -35,7 +36,9 @@ fixtures = [
 # include js, css files in header of desk.html
 # app_include_css = "/assets/gnapi_customizations/css/gnapi_customizations.css"
 app_include_js = [
-    "/assets/gnapi_customizations/js/timesheet_override_direct.js?v=3"
+    "/assets/gnapi_customizations/js/timesheet_override_direct.js?v=3",
+    "/assets/gnapi_customizations/js/custom_timesheet_list.js?v=1",
+    "/assets/gnapi_customizations/js/custom_timesheet_list_view.js?v=1"
 ]
 
 # include js, css files in header of web template

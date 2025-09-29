@@ -1,0 +1,68 @@
+[
+ {
+  "doctype": "Custom Timesheet",
+  "name": "TS-2024-001",
+  "employee": "EMP-001",
+  "total_hours": 8.0,
+  "status": "Draft",
+  "timesheet_details": "Main Timesheet Section",
+  "time_logs": [
+   {
+    "task": "TASK-001",
+    "project": "PROJ-001",
+    "start_date_time": "2024-01-15 09:00:00",
+    "end_date_time": "2024-01-15 17:00:00",
+    "taken_hours": 8.0,
+    "is_billable": 1
+   }
+  ],
+  "attachments": "",
+  "approver": "ADMIN",
+  "active": 1,
+  "docstatus": 0
+ },
+ {
+  "doctype": "Custom Timesheet",
+  "name": "TS-2024-002",
+  "employee": "EMP-002",
+  "total_hours": 7.5,
+  "status": "Submitted",
+  "timesheet_details": "Main Timesheet Section",
+  "time_logs": [
+   {
+    "task": "TASK-002",
+    "project": "PROJ-002",
+    "start_date_time": "2024-01-15 08:30:00",
+    "end_date_time": "2024-01-15 16:00:00",
+    "taken_hours": 7.5,
+    "is_billable": 1
+   }
+  ],
+  "attachments": "",
+  "approver": "ADMIN",
+  "active": 1,
+  "docstatus": 1
+ },
+ {
+  "doctype": "Custom Timesheet",
+  "name": "TS-2024-003",
+  "employee": "EMP-001",
+  "total_hours": 6.0,
+  "status": "Approved",
+  "timesheet_details": "Main Timesheet Section",
+  "time_logs": [
+   {
+    "task": "TASK-003",
+    "project": "PROJ-001",
+    "start_date_time": "2024-01-16 10:00:00",
+    "end_date_time": "2024-01-16 16:00:00",
+    "taken_hours": 6.0,
+    "is_billable": 0
+   }
+  ],
+  "attachments": "",
+  "approver": "ADMIN",
+  "active": 1,
+  "docstatus": 2
+ }
+]
