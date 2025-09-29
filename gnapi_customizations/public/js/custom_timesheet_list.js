@@ -30,13 +30,6 @@ $(document).ready(function () {
 		}
 	}
 
-	// Add custom columns to the list view
-	function addCustomColumns() {
-		// This will be handled by the DocType configuration
-		console.log("Custom Timesheet List: Custom columns configured via DocType");
-	}
-
 	// Initialize enhancements
 	addCustomFilters();
-	addCustomColumns();
 });
