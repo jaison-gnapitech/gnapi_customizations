@@ -35,8 +35,6 @@ fixtures = [
 # include js, css files in header of desk.html
 # app_include_css = "/assets/gnapi_customizations/css/gnapi_customizations.css"
 app_include_js = [
-    "/assets/gnapi_customizations/js/custom_timesheet_navigation.js?v=3",
-    "/assets/gnapi_customizations/js/timesheet_navigation_override.js?v=3",
     "/assets/gnapi_customizations/js/timesheet_override_direct.js?v=3"
 ]
 
