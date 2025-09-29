@@ -29,29 +29,26 @@
         const originalSetRoute = frappe.set_route;
         frappe.set_route = function(doctype, name, filters) {
             try {
-                // Array-style route: ['List', 'Timesheet']
-                if (Array.isArray(doctype) && doctype.length > 1 && typeof doctype[1] === 'string') {
-                    if (doctype[1].toLowerCase() === 'timesheet') {
-                        doctype[1] = 'Custom Timesheet';
+                if (Array.isArray(doctype)) {
+                    // Only convert strings
+                    if (typeof doctype[0] === 'string' && doctype[0].toLowerCase() === 'timesheet') {
+                        doctype[0] = 'Custom Timesheet';
                     }
-                }
-                // Form route: ('Form', 'Timesheet', ...)
-                else if (typeof name === 'string' && name.toLowerCase() === 'timesheet') {
-                    name = 'Custom Timesheet';
-                }
-                // String-style doctype: 'Timesheet'
-                else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
+                } else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
                     doctype = 'Custom Timesheet';
                 }
-
-                // Do not pass URLs as doctype
+        
+                if (typeof name === 'string' && name.toLowerCase() === 'timesheet') {
+                    name = 'Custom Timesheet';
+                }
+        
             } catch (err) {
                 console.error('Timesheet override error:', err);
             }
-
+        
             return originalSetRoute.apply(this, [doctype, name, filters]);
         };
-
+        
         // --- Intercept Timesheet clicks only ---
         $(document).on('click.timesheet', 'a', function(e) {
             const $this = $(this);
