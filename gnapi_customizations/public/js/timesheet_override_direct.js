@@ -1,10 +1,9 @@
 // Direct Timesheet Override - Fully Scoped & Safe
 // Only redirect /app/timesheet → /app/custom-timesheet
+// Prevents undefined/invalid routes for all other pages
 
 (function() {
     'use strict';
-
-    console.log('Direct Timesheet Override: Script executing...');
 
     function waitForFrappe() {
         if (document.readyState === 'loading') {
@@ -13,7 +12,6 @@
         }
 
         if (typeof frappe !== 'undefined' && frappe.set_route) {
-            console.log('Direct Timesheet Override: Frappe available, initializing...');
             initializeOverride();
         } else {
             setTimeout(waitForFrappe, 100);
@@ -26,31 +24,33 @@
 
         const originalSetRoute = frappe.set_route;
 
-        // --- Override frappe.set_route safely ---
         frappe.set_route = function(doctype, name, filters) {
             try {
-                // Array style: ['List', 'Timesheet']
-                if (Array.isArray(doctype) && typeof doctype[1] === 'string') {
-                    if (doctype[1].toLowerCase() === 'timesheet') {
+                // --- Only modify Timesheet routes ---
+                if (Array.isArray(doctype)) {
+                    if (typeof doctype[1] === 'string' && doctype[1].toLowerCase() === 'timesheet') {
                         doctype[1] = 'Custom Timesheet';
                     }
-                }
-                // String-style doctype
-                else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
+                } else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
                     doctype = 'Custom Timesheet';
                 }
-                // Form route: name is 'Timesheet'
                 if (typeof name === 'string' && name.toLowerCase() === 'timesheet') {
                     name = 'Custom Timesheet';
                 }
+
+                // --- Validate arguments to prevent undefined/URL errors ---
+                if (doctype === undefined || doctype === null) return;
+                if (Array.isArray(doctype) && doctype[0] === undefined) return;
+
             } catch (err) {
                 console.error('Timesheet override error:', err);
+                return;
             }
 
             return originalSetRoute.apply(this, [doctype, name, filters]);
         };
 
-        // --- Intercept Timesheet clicks only ---
+        // --- Intercept Timesheet clicks ---
         $(document).on('click.timesheet', 'a', function(e) {
             const $this = $(this);
             const href = ($this.attr('href') || '').toLowerCase();
@@ -59,14 +59,12 @@
 
             if (text === 'timesheet' || href === '/app/timesheet' || dataLink === '/app/timesheet') {
                 e.preventDefault();
-                e.stopPropagation();
-                console.log('Timesheet link clicked, redirecting to Custom Timesheet');
                 frappe.set_route('List', 'Custom Timesheet');
                 return false;
             }
         });
 
-        // --- Rewrite only exact Timesheet links in DOM ---
+        // --- Rewrite Timesheet links in DOM ---
         function rewriteLinks() {
             $('a[href="/app/timesheet"], a[data-link="/app/timesheet"]').each(function() {
                 const $link = $(this);
@@ -83,21 +81,12 @@
             });
         }
 
-        // Initial rewrite
-        if (typeof $ !== 'undefined') {
-            rewriteLinks();
-        } else {
-            document.addEventListener('DOMContentLoaded', function() {
-                if (typeof $ !== 'undefined') rewriteLinks();
-            });
-        }
+        if (typeof $ !== 'undefined') rewriteLinks();
 
-        // Re-run on SPA navigation
         $(document).on('page-change route-change', function() {
             setTimeout(rewriteLinks, 300);
         });
     }
 
     waitForFrappe();
-    console.log('Direct Timesheet Override: Script loaded');
 })();
