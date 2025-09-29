@@ -28,40 +28,48 @@
         // --- Override frappe.set_route safely ---
         const originalSetRoute = frappe.set_route;
         frappe.set_route = function(doctype, name, filters) {
-            // Debug logging to identify undefined parameters
-            console.log('frappe.set_route called with:', {
-                doctype: doctype,
-                name: name,
-                filters: filters,
-                doctypeType: typeof doctype,
-                nameType: typeof name,
-                filtersType: typeof filters
-            });
+            // Only intercept and modify Timesheet-related routes
+            let modifiedDoctype = doctype;
+            let modifiedName = name;
+            let modifiedFilters = filters;
             
             try {
-                if (Array.isArray(doctype)) {
-                    // Handle array case - check if first element is a string and equals 'timesheet'
-                    if (doctype.length > 0 && typeof doctype[0] === 'string' && doctype[0].toLowerCase() === 'timesheet') {
-                        doctype[0] = 'Custom Timesheet';
+                // Check if this is a Timesheet route that needs to be redirected
+                const isTimesheetRoute = (() => {
+                    if (Array.isArray(doctype)) {
+                        return doctype.length > 0 && typeof doctype[0] === 'string' && 
+                               doctype[0].toLowerCase() === 'timesheet';
                     }
-                } else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
-                    doctype = 'Custom Timesheet';
+                    return typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet';
+                })();
+                
+                const isTimesheetName = typeof name === 'string' && name.toLowerCase() === 'timesheet';
+                
+                // Only modify if it's actually a Timesheet route
+                if (isTimesheetRoute || isTimesheetName) {
+                    console.log('Timesheet route detected, redirecting to Custom Timesheet:', {
+                        doctype: doctype,
+                        name: name,
+                        filters: filters
+                    });
+                    
+                    if (Array.isArray(doctype)) {
+                        modifiedDoctype = ['Custom Timesheet'];
+                    } else {
+                        modifiedDoctype = 'Custom Timesheet';
+                    }
+                    
+                    if (isTimesheetName) {
+                        modifiedName = 'Custom Timesheet';
+                    }
                 }
-        
-                if (typeof name === 'string' && name.toLowerCase() === 'timesheet') {
-                    name = 'Custom Timesheet';
-                }
-        
+                
             } catch (err) {
                 console.error('Timesheet override error:', err);
             }
         
-            // Ensure we don't pass undefined values that could cause URL issues
-            const safeDoctype = doctype;
-            const safeName = name || '';
-            const safeFilters = filters || {};
-            
-            return originalSetRoute.apply(this, [safeDoctype, safeName, safeFilters]);
+            // Pass through all routes unchanged, only modify Timesheet routes
+            return originalSetRoute.apply(this, [modifiedDoctype, modifiedName, modifiedFilters]);
         };
         
         // --- Intercept Timesheet clicks only ---
@@ -71,18 +79,10 @@
             const dataLink = ($this.attr('data-link') || '').toLowerCase();
             const text = ($this.text() || '').trim().toLowerCase();
 
-            console.log('Link clicked:', {
-                href: $this.attr('href'),
-                dataLink: $this.attr('data-link'),
-                text: text,
-                originalHref: href,
-                originalDataLink: dataLink
-            });
-
             if (text === 'timesheet' || href === '/app/timesheet' || dataLink === '/app/timesheet') {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Redirecting to Custom Timesheet');
+                console.log('Timesheet link clicked, redirecting to Custom Timesheet');
                 frappe.set_route('List', 'Custom Timesheet');
                 return false;
             }
