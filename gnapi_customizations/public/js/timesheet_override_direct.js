@@ -23,14 +23,19 @@
         const originalSetRoute = frappe.set_route;
 
         frappe.set_route = function(doctype, name, filters) {
-            // Only intercept timesheet-related routes (case insensitive)
+            // Clean undefined or invalid parameters before processing
             if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
+                // Ensure no undefined parameters are passed
+                name = name && name !== 'undefined' ? name : '';
+                filters = filters && filters !== 'undefined' ? filters : '';
+
                 console.log('Timesheet route detected, redirecting to Custom Timesheet:', doctype, name, filters);
-                // Modify the route to redirect to "Custom Timesheet"
+
+                // Redirect to Custom Timesheet if valid
                 return originalSetRoute.apply(this, ['Custom Timesheet', name, filters]);
             }
 
-            // If not a timesheet route, just call the original method
+            // If it's not a timesheet route, just pass through as normal
             return originalSetRoute.apply(this, [doctype, name, filters]);
         };
     }
