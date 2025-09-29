@@ -2,13 +2,18 @@
 // This file configures the list view for Custom Timesheet
 
 frappe.listview_settings['Custom Timesheet'] = {
-    // Add custom buttons to the list view
+    // Add custom fields to display in the list
     add_fields: ["employee", "total_hours", "status", "approver"],
-    
-    // Set default filters
+
+    // onload method to initialize the list view and add buttons
     onload: function(listview) {
         console.log('Custom Timesheet List View: Loading...');
         
+        // Add "New Timesheet" button to the top of the list view
+        listview.page.add_inner_button("New Timesheet", function() {
+            frappe.new_doc('Custom Timesheet'); // Open a new document form for 'Custom Timesheet'
+        });
+
         // Add custom filters
         listview.page.add_inner_button("Filter by Status", function() {
             frappe.prompt([
@@ -26,7 +31,7 @@ frappe.listview_settings['Custom Timesheet'] = {
                 }
             });
         });
-        
+
         // Add employee filter
         listview.page.add_inner_button("Filter by Employee", function() {
             frappe.prompt([
@@ -44,7 +49,7 @@ frappe.listview_settings['Custom Timesheet'] = {
                 }
             });
         });
-        
+
         // Add date range filter
         listview.page.add_inner_button("Filter by Date Range", function() {
             const today = new Date();
@@ -80,7 +85,7 @@ frappe.listview_settings['Custom Timesheet'] = {
         });
     },
     
-    // Customize row display
+    // Customize row display based on status
     get_indicator: function(doc) {
         if (doc.status === "Draft") {
             return [__("Draft"), "red", "status,=,Draft"];
@@ -91,7 +96,7 @@ frappe.listview_settings['Custom Timesheet'] = {
         }
     },
     
-    // Add custom columns
+    // Add custom columns with formatting
     formatters: {
         total_hours: function(value) {
             return value ? value + " hrs" : "";
@@ -108,10 +113,10 @@ frappe.listview_settings['Custom Timesheet'] = {
         }
     },
     
-    // Set default sort
+    // Set default sort order
     order_by: "modified desc",
     
-    // Add refresh button
+    // Refresh method
     refresh: function(listview) {
         console.log('Custom Timesheet List View: Refreshed');
     }
