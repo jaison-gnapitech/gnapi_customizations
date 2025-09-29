@@ -10,6 +10,7 @@
 
         if (typeof frappe !== "undefined" && frappe.set_route) {
             overrideSetRoute();
+            redirectToCustomTimesheet(); // Perform the redirect check when Frappe is ready
         } else {
             setTimeout(waitForFrappe, 100);
         }
@@ -43,9 +44,7 @@
 
                 // --- Only override "timesheet" routes ---
                 if (
-                    (Array.isArray(doctype) &&
-                        doctype[1] &&
-                        doctype[1].toLowerCase() === "timesheet") ||
+                    (Array.isArray(doctype) && doctype[1] && doctype[1].toLowerCase() === "timesheet") ||
                     (typeof doctype === "string" && doctype.toLowerCase() === "timesheet")
                 ) {
                     console.log("Overriding 'timesheet' route to 'Custom Timesheet'");
@@ -75,5 +74,4 @@
 
     // Initialize override when Frappe is ready and perform the redirect check
     waitForFrappe();
-    redirectToCustomTimesheet();
 })();
