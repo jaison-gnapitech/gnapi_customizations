@@ -1,5 +1,5 @@
-// Direct Timesheet Override - Safe & Scoped
-// Redirect all Timesheet navigation to Custom Timesheet only
+// Direct Timesheet Override - Fully Scoped
+// Only redirect /app/timesheet → /app/custom-timesheet
 
 (function() {
     'use strict';
@@ -21,34 +21,31 @@
     }
 
     function initializeOverride() {
+        // Prevent multiple overrides
         if (frappe._timesheetRouteOverridden) return;
         frappe._timesheetRouteOverridden = true;
 
         // --- Override frappe.set_route safely ---
         const originalSetRoute = frappe.set_route;
         frappe.set_route = function(doctype, name, filters) {
-            console.log('frappe.set_route called with:', { doctype, name, filters });
-
             try {
-                // Array-style call: ['List', 'Timesheet']
+                // Handle array-style route: ['List', 'Timesheet']
                 if (Array.isArray(doctype) && doctype.length > 1 && typeof doctype[1] === 'string') {
                     if (doctype[1].toLowerCase() === 'timesheet') {
                         console.log('Redirecting Timesheet → Custom Timesheet (array call)');
                         doctype[1] = 'Custom Timesheet';
                     }
                 }
-                // String-style doctype: 'Timesheet'
+                // Handle Form route: ('Form', 'Timesheet', ...)
+                else if (typeof name === 'string' && name.toLowerCase() === 'timesheet') {
+                    console.log('Redirecting Timesheet → Custom Timesheet (name argument)');
+                    name = 'Custom Timesheet';
+                }
+                // Handle string-style doctype: 'Timesheet'
                 else if (typeof doctype === 'string' && doctype.toLowerCase() === 'timesheet') {
                     console.log('Redirecting Timesheet → Custom Timesheet (string doctype)');
                     doctype = 'Custom Timesheet';
                 }
-
-                // Name argument in Form routes: ('Form', 'Timesheet', ...)
-                if (typeof name === 'string' && name.toLowerCase() === 'timesheet') {
-                    console.log('Redirecting Timesheet → Custom Timesheet (name argument)');
-                    name = 'Custom Timesheet';
-                }
-
             } catch (err) {
                 console.error('Timesheet override error:', err);
             }
@@ -63,7 +60,7 @@
             const dataLink = ($this.attr('data-link') || '').toLowerCase();
             const text = ($this.text() || '').trim().toLowerCase();
 
-            if (text === 'timesheet' || href.includes('/app/timesheet') || dataLink.includes('timesheet')) {
+            if (text === 'timesheet' || href === '/app/timesheet' || dataLink === '/app/timesheet') {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -73,9 +70,9 @@
             }
         });
 
-        // --- Rewrite only Timesheet links in DOM ---
+        // --- Rewrite only exact Timesheet links in DOM ---
         function rewriteLinks() {
-            $('a[href*="/app/timesheet"], a[data-link*="timesheet"]').each(function() {
+            $('a[href="/app/timesheet"], a[data-link="/app/timesheet"]').each(function() {
                 const $link = $(this);
                 $link.attr('href', '/app/custom-timesheet');
                 $link.attr('data-link', '/app/custom-timesheet');
