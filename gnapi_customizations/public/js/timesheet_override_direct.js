@@ -31,42 +31,35 @@
 				name = name || "";
 				filters = filters || "";
 
-				// Prevent incorrect routing: Ensure doctype and name are valid strings or array
+				// Prevent incorrect routing: Ensure doctype and name are valid strings or arrays
 				if (Array.isArray(doctype)) {
 					// Add additional logic if needed for array-style routes
 				} else if (typeof doctype !== "string") {
 					console.warn("Invalid doctype detected, skipping route change:", doctype);
+					return; // Prevent setting route if doctype is invalid
 				}
 
 				// --- Only override "timesheet" routes ---
 				if (
-					Array.isArray(doctype) &&
-					doctype[1] &&
-					doctype[1].toLowerCase() === "timesheet"
+					(Array.isArray(doctype) &&
+						doctype[1] &&
+						doctype[1].toLowerCase() === "timesheet") ||
+					(typeof doctype === "string" && doctype.toLowerCase() === "timesheet")
 				) {
-					doctype[1] = "Custom Timesheet";
-				} else if (typeof doctype === "string" && doctype.toLowerCase() === "timesheet") {
+					console.log("Overriding 'timesheet' route to 'Custom Timesheet'");
 					doctype = "Custom Timesheet";
 				}
 
-				// Change "name" to Custom Timesheet if it matches "timesheet"
+				// Change "name" to "Custom Timesheet" if it matches "timesheet"
 				if (name.toLowerCase() === "timesheet") {
 					name = "Custom Timesheet";
 				}
 
-				// --- Remove trailing slashes from URL if doctype or name is empty ---
-				if (doctype === "") {
-					doctype = undefined; // Removing empty doctype
-				}
-				if (name === "") {
-					name = undefined; // Removing empty name
-				}
+				// Concatenate doctype, name, and filters ensuring empty strings come last
+				const route = [doctype, name, filters].filter(Boolean).concat(["", ""]).join("/");
 
-				// Construct the URL with the new doctype and name
-				let route = [doctype, name].filter(Boolean).join("/"); // Join only valid parts
-
-				// --- Call original set_route with validated and cleaned parameters ---
-				return originalSetRoute.apply(this, [doctype, name, filters]);
+				// --- Call the original set_route with validated and cleaned parameters ---
+				return originalSetRoute.apply(this, [route]);
 			} catch (err) {
 				console.error("Error in route override:", err);
 			}
