@@ -64,6 +64,7 @@
 					return originalSetRoute.apply(this, [finalRoute]);
 				}
 			} catch (err) {
+				console.error(err);
 			}
 		};
 	}
@@ -173,15 +174,11 @@
 	// Start hiding Timesheet elements and renaming labels
 	setTimeout(handleTimesheetElements, 1000);
 
-	// Also listen to Frappe's route events
-	if (typeof frappe !== 'undefined') {
-		frappe.ui.ready(function() {
-			$(document).on('page-change route-change', function() {
-				setTimeout(() => {
-					renameCustomTimesheetLabels();
-					hideTimesheetElements();
-				}, 300);
-			});
-		});
-	}
+	// Observe route changes manually
+	$(document).on('page-change route-change', function() {
+		setTimeout(() => {
+			renameCustomTimesheetLabels();
+			hideTimesheetElements();
+		}, 300);
+	});
 })();
