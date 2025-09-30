@@ -14,6 +14,11 @@ frappe.ui.form.on('Custom Timesheet', {
 	onload: function(frm) {
 		// Restrict status on load as well
 		restrictStatusForEmployee(frm);
+	},
+	
+	status: function(frm) {
+		// Validate status change for Employee role
+		validateStatusChange(frm);
 	}
 });
 
@@ -22,16 +27,32 @@ function restrictStatusForEmployee(frm) {
 	// Check if current user has Employee role
 	if (frappe.user.has_role('Employee') && !frappe.user.has_role('System Manager')) {
 		// Set status field to only show Draft and Submitted
-		frm.set_df_property('status', 'options', ['Draft', 'Submitted'].join('\n'));
+		frm.set_df_property('status', 'options', 'Draft\nSubmitted');
 		
 		// If status is not Draft or Submitted, reset to Draft
 		if (frm.doc.status && !['Draft', 'Submitted'].includes(frm.doc.status)) {
+			frappe.msgprint(__('Employees can only set status to Draft or Submitted'));
 			frm.set_value('status', 'Draft');
 		}
 		
 		// Make status read-only if already submitted (employee can't change it back)
 		if (frm.doc.status === 'Submitted') {
 			frm.set_df_property('status', 'read_only', 1);
+		}
+	}
+}
+
+// Validate status change
+function validateStatusChange(frm) {
+	if (frappe.user.has_role('Employee') && !frappe.user.has_role('System Manager')) {
+		const allowed = ['Draft', 'Submitted'];
+		if (frm.doc.status && !allowed.includes(frm.doc.status)) {
+			frappe.msgprint({
+				title: __('Invalid Status'),
+				indicator: 'red',
+				message: __('Employees can only set status to Draft or Submitted')
+			});
+			frm.set_value('status', 'Draft');
 		}
 	}
 }
