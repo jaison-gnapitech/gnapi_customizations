@@ -126,7 +126,7 @@
 		});
 	}
 
-	// Rename visible labels: 'Custom Timesheet' → 'Timesheet', 'Add Custom Timesheet' → 'Add Timesheet'
+	// Rename visible labels: 'Custom Timesheet' → 'Timesheet', 'Add Custom Timesheet' → 'Add Timesheet', 'New Custom Timesheet' → 'New Timesheet'
 	function renameCustomTimesheetLabels() {
 		// Page title on List view
 		const titleEl = document.querySelector('.page-title .ellipsis, .page-title');
@@ -137,11 +137,11 @@
 			}
 		}
 
-		// Buttons and links
+		// Buttons and links (handle "New Custom Timesheet", "Add Custom Timesheet", etc.)
 		document.querySelectorAll('button, a').forEach(function(el){
 			const txt = (el.textContent || '').trim();
 			if (!txt) return;
-			if (/^add\s+custom\s+timesheet$/i.test(txt)) {
+			if (/^(new|add)\s+custom\s+timesheet$/i.test(txt)) {
 				el.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
 			} else if (/custom\s+timesheet/i.test(txt)) {
 				el.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
