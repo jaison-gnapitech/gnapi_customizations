@@ -175,7 +175,7 @@
 
 	// Also listen to Frappe's route events
 	if (typeof frappe !== 'undefined') {
-		frappe.ready(function() {
+		frappe.ui.ready(function() {
 			$(document).on('page-change route-change', function() {
 				setTimeout(() => {
 					renameCustomTimesheetLabels();
