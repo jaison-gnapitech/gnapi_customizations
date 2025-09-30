@@ -6,8 +6,35 @@ frappe.ui.form.on('Custom Timesheet', {
 		
 		// Add custom attachment area with drag-and-drop
 		addCustomAttachmentArea(frm);
+		
+		// Restrict status options for Employee role
+		restrictStatusForEmployee(frm);
+	},
+	
+	onload: function(frm) {
+		// Restrict status on load as well
+		restrictStatusForEmployee(frm);
 	}
 });
+
+// Restrict status field options for Employee role users
+function restrictStatusForEmployee(frm) {
+	// Check if current user has Employee role
+	if (frappe.user.has_role('Employee') && !frappe.user.has_role('System Manager')) {
+		// Set status field to only show Draft and Submitted
+		frm.set_df_property('status', 'options', ['Draft', 'Submitted'].join('\n'));
+		
+		// If status is not Draft or Submitted, reset to Draft
+		if (frm.doc.status && !['Draft', 'Submitted'].includes(frm.doc.status)) {
+			frm.set_value('status', 'Draft');
+		}
+		
+		// Make status read-only if already submitted (employee can't change it back)
+		if (frm.doc.status === 'Submitted') {
+			frm.set_df_property('status', 'read_only', 1);
+		}
+	}
+}
 
 function enhanceAttachmentField(frm) {
 	// Style the existing attachment field

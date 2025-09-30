@@ -20,6 +20,12 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
     if not doc.status:
         if "Employee" in frappe.get_roles():
             doc.status = "Draft"
+    
+    # Restrict status options for Employee role (not System Manager)
+    if "Employee" in frappe.get_roles() and "System Manager" not in frappe.get_roles():
+        allowed_statuses = ["Draft", "Submitted"]
+        if doc.status and doc.status not in allowed_statuses:
+            frappe.throw(f"Employees can only set status to Draft or Submitted. Current status '{doc.status}' is not allowed.")
 
     # Aggregate total hours from child rows safely
     total_hours = 0.0
