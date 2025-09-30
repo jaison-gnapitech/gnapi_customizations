@@ -16,6 +16,24 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
         else:
             frappe.throw(f"No Employee record linked to user {frappe.session.user}")
 
+    # Auto-assign approver based on project creator
+    if doc.time_logs and len(doc.time_logs) > 0:
+        # Get the first project from time logs
+        project_name = None
+        for row in doc.time_logs:
+            if getattr(row, "project", None):
+                project_name = row.project
+                break
+        
+        # Set approver to project owner/creator if not already set
+        if project_name and not doc.approver:
+            project_owner = frappe.db.get_value("Project", project_name, "owner")
+            if project_owner:
+                # Try to get employee linked to project owner
+                approver_employee = frappe.db.get_value("Employee", {"user_id": project_owner}, "name")
+                if approver_employee:
+                    doc.approver = approver_employee
+
     # Default status handling for Employees
     if not doc.status:
         if "Employee" in frappe.get_roles():
@@ -80,24 +98,61 @@ def on_custom_timesheet_detail_before_save(doc: Document, method: str | None = N
         doc.taken_hours = 0
 
 def custom_timesheet_permission_query(user: str) -> str:
-    # Employees can only see their own timesheets; admins/managers see all
+    # Admins see all
     if user == "Administrator":
         return ""
+    
     roles = frappe.get_roles(user)
-    if "Employee" in roles:
-        employee = _get_employee_for_user(user)
-        if employee:
-            return f"`tabCustom Timesheet`.`employee` = {frappe.db.escape(employee)}"
-        # No linked employee: hide all
-        return "`tabCustom Timesheet`.`name` = '_NO_ACCESS_'"
-    return ""
+    employee = _get_employee_for_user(user)
+    
+    # System Managers see all
+    if "System Manager" in roles:
+        return ""
+    
+    # Build permission conditions
+    conditions = []
+    
+    # Employees can see their own timesheets (all statuses)
+    if "Employee" in roles and employee:
+        conditions.append(f"`tabCustom Timesheet`.`employee` = {frappe.db.escape(employee)}")
+    
+    # Approvers can see timesheets assigned to them, but ONLY Submitted/Approved/Rejected (not Draft)
+    if employee:
+        conditions.append(
+            f"(`tabCustom Timesheet`.`approver` = {frappe.db.escape(employee)} "
+            f"AND `tabCustom Timesheet`.`status` IN ('Submitted', 'Approved', 'Rejected'))"
+        )
+    
+    # Combine conditions with OR
+    if conditions:
+        return f"({' OR '.join(conditions)})"
+    
+    # No access if no conditions match
+    return "`tabCustom Timesheet`.`name` = '_NO_ACCESS_'"
 
 def custom_timesheet_has_permission(doc: Document, user: str) -> bool:
-    # Row-level check: employees can only access their own document
+    # Row-level check: employees can access their own timesheets or timesheets they approve
     if user == "Administrator":
         return True
+    
     roles = frappe.get_roles(user)
-    if "Employee" in roles:
-        employee = _get_employee_for_user(user)
-        return bool(employee and getattr(doc, "employee", None) == employee)
-    return True
+    
+    # System Managers have full access
+    if "System Manager" in roles:
+        return True
+    
+    employee = _get_employee_for_user(user)
+    if not employee:
+        return False
+    
+    # Employee can access their own timesheets (all statuses)
+    if getattr(doc, "employee", None) == employee:
+        return True
+    
+    # Approver can access timesheets assigned to them, but ONLY if Submitted/Approved/Rejected
+    if getattr(doc, "approver", None) == employee:
+        status = getattr(doc, "status", None)
+        if status in ["Submitted", "Approved", "Rejected"]:
+            return True
+    
+    return False
