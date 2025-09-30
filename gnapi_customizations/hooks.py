@@ -10,9 +10,7 @@ fixtures = [
         {"doctype": "Custom Field", "filters": [["module", "=", "Gnapi Customizations"]] },
         {"doctype": "DocType", "filters": [["module", "=", "Gnapi Customizations"]]},
         {"doctype": "Social Login Key", "filters": [["provider_name", "in", ["Office 365"]]]},
-        {"doctype": "Property Setter", "filters": [["doc_type", "=", "Employee"]]},
-        {"doctype": "Server Script", "filters": [["module", "=", "Gnapi Customizations"]]},
-        {"doctype": "Custom Timesheet", "filters": [["name", "in", ["TS-2024-001", "TS-2024-002", "TS-2024-003"]]]}
+        {"doctype": "Property Setter", "filters": [["doc_type", "=", "Employee"]]}
 ]
 # Apps
 # ------------------
@@ -150,13 +148,23 @@ app_include_js = [
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+    "Custom Timesheet": {
+        "validate": "gnapi_customizations.customizations.custom_timesheet_events.on_custom_timesheet_validate",
+        "before_save": "gnapi_customizations.customizations.custom_timesheet_events.on_custom_timesheet_before_save"
+    },
+    "Custom Timesheet Detail": {
+        "before_save": "gnapi_customizations.customizations.custom_timesheet_events.on_custom_timesheet_detail_before_save"
+    }
+}
+
+permission_query_conditions = {
+    "Custom Timesheet": "gnapi_customizations.customizations.custom_timesheet_events.custom_timesheet_permission_query"
+}
+
+has_permission = {
+    "Custom Timesheet": "gnapi_customizations.customizations.custom_timesheet_events.custom_timesheet_has_permission"
+}
 
 # Scheduled Tasks
 # ---------------
