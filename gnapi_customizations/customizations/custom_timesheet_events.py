@@ -116,11 +116,20 @@ def custom_timesheet_permission_query(user: str) -> str:
     if "Employee" in roles and employee:
         conditions.append(f"`tabCustom Timesheet`.`employee` = {frappe.db.escape(employee)}")
     
-    # Approvers can see timesheets assigned to them, but ONLY Submitted/Approved/Rejected (not Draft)
-    # Check if approver column exists first
-    if employee and frappe.db.has_column("Custom Timesheet", "approver"):
+    # Users listed as approvers in projects can see timesheets for those projects (Submitted/Approved/Rejected only)
+    # Get all projects where this user is an approver
+    projects_where_approver = frappe.db.sql("""
+        SELECT DISTINCT `parent` 
+        FROM `tabProject Timesheet Approver`
+        WHERE `user` = %s
+    """, (user,), as_dict=False)
+    
+    if projects_where_approver:
+        project_list = "','".join([frappe.db.escape(p[0]) for p in projects_where_approver])
         conditions.append(
-            f"(`tabCustom Timesheet`.`approver` = {frappe.db.escape(employee)} "
+            f"(EXISTS (SELECT 1 FROM `tabCustom Timesheet Detail` "
+            f"WHERE `tabCustom Timesheet Detail`.`parent` = `tabCustom Timesheet`.`name` "
+            f"AND `tabCustom Timesheet Detail`.`project` IN ('{project_list}')) "
             f"AND `tabCustom Timesheet`.`status` IN ('Submitted', 'Approved', 'Rejected'))"
         )
     
@@ -150,11 +159,18 @@ def custom_timesheet_has_permission(doc: Document, user: str) -> bool:
     if getattr(doc, "employee", None) == employee:
         return True
     
-    # Approver can access timesheets assigned to them, but ONLY if Submitted/Approved/Rejected
-    # Check if approver field exists first
-    if hasattr(doc, "approver") and getattr(doc, "approver", None) == employee:
-        status = getattr(doc, "status", None)
-        if status in ["Submitted", "Approved", "Rejected"]:
-            return True
+    # Check if user is an approver for any project in this timesheet
+    status = getattr(doc, "status", None)
+    if status in ["Submitted", "Approved", "Rejected"]:
+        for time_log in (doc.time_logs or []):
+            project = getattr(time_log, "project", None)
+            if project:
+                # Check if user is in approvers list for this project
+                is_approver = frappe.db.exists("Project Timesheet Approver", {
+                    "parent": project,
+                    "user": user
+                })
+                if is_approver:
+                    return True
     
     return False

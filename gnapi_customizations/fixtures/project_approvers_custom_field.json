@@ -1,0 +1,12 @@
+[
+ {
+  "doctype": "Custom Field",
+  "dt": "Project",
+  "fieldname": "timesheet_approvers",
+  "fieldtype": "Table MultiSelect",
+  "label": "Timesheet Approvers",
+  "options": "Project Timesheet Approver",
+  "insert_after": "status",
+  "description": "Select users who can approve timesheets for this project"
+ }
+]
