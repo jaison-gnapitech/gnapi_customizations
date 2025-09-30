@@ -16,8 +16,8 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
         else:
             frappe.throw(f"No Employee record linked to user {frappe.session.user}")
 
-    # Auto-assign approver based on project creator
-    if doc.time_logs and len(doc.time_logs) > 0:
+    # Auto-assign approver based on project creator (only if approver field exists)
+    if hasattr(doc, "approver") and doc.time_logs and len(doc.time_logs) > 0:
         # Get the first project from time logs
         project_name = None
         for row in doc.time_logs:
@@ -117,7 +117,8 @@ def custom_timesheet_permission_query(user: str) -> str:
         conditions.append(f"`tabCustom Timesheet`.`employee` = {frappe.db.escape(employee)}")
     
     # Approvers can see timesheets assigned to them, but ONLY Submitted/Approved/Rejected (not Draft)
-    if employee:
+    # Check if approver column exists first
+    if employee and frappe.db.has_column("Custom Timesheet", "approver"):
         conditions.append(
             f"(`tabCustom Timesheet`.`approver` = {frappe.db.escape(employee)} "
             f"AND `tabCustom Timesheet`.`status` IN ('Submitted', 'Approved', 'Rejected'))"
@@ -150,7 +151,8 @@ def custom_timesheet_has_permission(doc: Document, user: str) -> bool:
         return True
     
     # Approver can access timesheets assigned to them, but ONLY if Submitted/Approved/Rejected
-    if getattr(doc, "approver", None) == employee:
+    # Check if approver field exists first
+    if hasattr(doc, "approver") and getattr(doc, "approver", None) == employee:
         status = getattr(doc, "status", None)
         if status in ["Submitted", "Approved", "Rejected"]:
             return True
