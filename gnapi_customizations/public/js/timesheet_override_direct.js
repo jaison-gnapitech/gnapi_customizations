@@ -108,6 +108,7 @@
 	// Function to handle DOM changes and re-hide timesheet elements
 	function handleTimesheetElements() {
 		hideTimesheetElements();
+		renameCustomTimesheetLabels();
 
 		// Re-run on DOM changes (for SPA navigation)
 		const observer = new MutationObserver(function (mutations) {
@@ -115,6 +116,7 @@
 				if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
 					setTimeout(() => {
 						hideTimesheetElements();
+						renameCustomTimesheetLabels();
 					}, 100);
 				}
 			});
@@ -126,9 +128,60 @@
 		});
 	}
 
+	// Rename visible labels: 'Custom Timesheet' → 'Timesheet'
+	function renameCustomTimesheetLabels() {
+		// Page title on List view
+		const titleEl = document.querySelector('.page-title .ellipsis, .page-title');
+		if (titleEl && /custom\s+timesheet/i.test(titleEl.textContent || '')) {
+			titleEl.textContent = (titleEl.textContent || '').replace(/custom\s+timesheet/ig, 'Timesheet');
+			if (document.title) {
+				document.title = document.title.replace(/custom\s+timesheet/ig, 'Timesheet');
+			}
+		}
+
+		// Buttons and links (handle "New Custom Timesheet", "Add Custom Timesheet", etc.)
+		document.querySelectorAll('button, a').forEach(function(el){
+			const txt = (el.textContent || '').trim();
+			if (!txt) return;
+			if (/^(new|add)\s+custom\s+timesheet$/i.test(txt)) {
+				el.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
+			} else if (/custom\s+timesheet/i.test(txt)) {
+				el.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
+			}
+		});
+
+		// Sidebar/menu items
+		document.querySelectorAll('.sidebar-menu a, .dropdown-menu a, a[data-link], a[href]').forEach(function(link){
+			const txt = (link.textContent || '').trim();
+			if (txt && /custom\s+timesheet/i.test(txt)) {
+				link.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
+			}
+		});
+
+		// Form title and breadcrumbs
+		document.querySelectorAll('.breadcrumb a, .breadcrumb span, h1, h2, h3').forEach(function(el){
+			const txt = (el.textContent || '').trim();
+			if (txt && /custom\s+timesheet/i.test(txt)) {
+				el.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
+			}
+		});
+	}
+
 	// Initialize override when Frappe is ready and perform the redirect check
 	waitForFrappe();
 
-	// Start hiding Timesheet elements and replace the button after a short delay to ensure all elements are loaded
+	// Start hiding Timesheet elements and renaming labels
 	setTimeout(handleTimesheetElements, 1000);
+
+	// Also listen to Frappe's route events
+	if (typeof frappe !== 'undefined') {
+		frappe.ready(function() {
+			$(document).on('page-change route-change', function() {
+				setTimeout(() => {
+					renameCustomTimesheetLabels();
+					hideTimesheetElements();
+				}, 300);
+			});
+		});
+	}
 })();

@@ -352,7 +352,6 @@
     "modified": "2025-09-25 19:25:00.000000",
     "module": "Gnapi Customizations",
     "name": "Custom Timesheet",
-    "label": "Timesheet",
     "naming_rule": "",
     "nsm_parent_field": null,
     "permissions": [
@@ -912,7 +911,6 @@
     "modified": "2025-09-25 19:25:00.000000",
     "module": "Gnapi Customizations",
     "name": "Custom Timesheet Detail",
-    "label": "Timesheet Detail",
     "naming_rule": "",
     "nsm_parent_field": null,
     "permissions": [],
