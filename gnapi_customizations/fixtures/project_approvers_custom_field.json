@@ -18,5 +18,16 @@
   "options": "Project Timesheet Approver",
   "insert_after": "timesheet_approvers_section",
   "description": "Select users who can approve timesheets for this project"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Project-select_timesheet_approvers",
+  "dt": "Project",
+  "fieldname": "select_timesheet_approvers",
+  "fieldtype": "Button",
+  "label": "Select Timesheet Approvers",
+  "insert_after": "timesheet_approvers",
+  "depends_on": "eval:doc.name",
+  "description": "Open a multi-select user picker to populate Timesheet Approvers"
  }
 ]
