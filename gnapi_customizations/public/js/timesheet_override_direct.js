@@ -70,7 +70,7 @@
                     console.log('Redirecting to custom-timesheet because of route override');
                     window.location.href = '/app/custom-timesheet'; // Directly change the URL
                 } else {
-                    // --- Call the original set_route with validated and cleaned parameters ---
+                    // Call the original set_route with validated and cleaned parameters
                     console.log('Setting route:', finalRoute);
                     return originalSetRoute.apply(this, [finalRoute]);
                 }
@@ -106,6 +106,13 @@
                 item.style.display = 'none';
             }
         });
+
+        // Hide the specific element with data-id="RsafDhm1MS"
+        const timesheetElement = document.querySelector('[data-id="RsafDhm1MS"]');
+        if (timesheetElement) {
+            console.log('Hiding specific Timesheet element with data-id="RsafDhm1MS"');
+            timesheetElement.style.display = 'none';
+        }
     }
 
     // Function to replace Timesheet button with Custom Timesheet button
