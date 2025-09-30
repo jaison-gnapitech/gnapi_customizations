@@ -3,19 +3,15 @@
 
 	// Wait for Frappe to be available before overriding
 	function waitForFrappe() {
-		console.log("Checking Frappe availability...");
-
 		if (document.readyState === "loading") {
 			document.addEventListener("DOMContentLoaded", waitForFrappe);
 			return;
 		}
 
 		if (typeof frappe !== "undefined" && frappe.set_route) {
-			console.log("Frappe detected, proceeding with overriding...");
 			overrideSetRoute();
 			redirectToCustomTimesheet(); // Perform the redirect check when Frappe is ready
 		} else {
-			console.log("Frappe not detected yet, retrying...");
 			setTimeout(waitForFrappe, 100);
 		}
 	}
@@ -23,11 +19,8 @@
 	// Redirect function to handle navigation to /app/timesheet
 	function redirectToCustomTimesheet() {
 		const currentRoute = window.location.pathname;
-		console.log("Current route:", currentRoute);
-
 		// If the user navigates to `/app/timesheet`, redirect to `/app/custom-timesheet`
 		if (currentRoute === "/app/timesheet") {
-			console.log("Redirecting to custom timesheet...");
 			window.location.href = "/app/custom-timesheet"; // Directly change the URL
 		}
 	}
@@ -40,8 +33,6 @@
 		const originalSetRoute = frappe.set_route;
 
 		frappe.set_route = function (doctype, name, filters) {
-			console.warn("route parameters detected:", doctype, name, filters);
-
 			try {
 				// If the route is 'timesheet', change it to 'Custom Timesheet'
 				if (
@@ -50,7 +41,6 @@
 						doctype[1].toLowerCase() === "timesheet") ||
 					(typeof doctype === "string" && doctype.toLowerCase() === "timesheet")
 				) {
-					console.log("Overriding 'timesheet' route to 'Custom Timesheet'");
 					doctype = "Custom Timesheet"; // Change 'timesheet' to 'Custom Timesheet'
 				}
 
@@ -69,29 +59,22 @@
 
 				// If the route is still pointing to 'timesheet', redirect directly
 				if (finalRoute === "timesheet") {
-					console.log("Redirecting to custom-timesheet because of route override");
 					window.location.href = "/app/custom-timesheet"; // Directly change the URL
 				} else {
-					// Call the original set_route with validated and cleaned parameters
-					console.log("Setting route:", finalRoute);
 					return originalSetRoute.apply(this, [finalRoute]);
 				}
 			} catch (err) {
-				console.error("Error in route override:", err);
 			}
 		};
 	}
 
 	// Function to hide Timesheet widgets and buttons
 	function hideTimesheetElements() {
-		console.log("Hiding Timesheet elements...");
-
 		// Hide Timesheet widget with data-doctype and aria-label
 		const timesheetWidget = document.querySelector(
 			'[aria-label="Timesheet"][data-widget-name="n8u94b92s8"]'
 		);
 		if (timesheetWidget) {
-			console.log("Timesheet widget detected, hiding it.");
 			timesheetWidget.style.display = "none";
 		}
 
@@ -100,7 +83,6 @@
 			'a[href*="/app/timesheet"], a[data-link*="/app/timesheet"]'
 		);
 		timesheetButtons.forEach((button) => {
-			console.log("Hiding Timesheet button:", button);
 			button.style.display = "none";
 		});
 
@@ -108,41 +90,29 @@
 		const sidebarItems = document.querySelectorAll(".sidebar-menu a");
 		sidebarItems.forEach((item) => {
 			if (item.textContent.trim().toLowerCase() === "timesheet") {
-				console.log("Hiding Timesheet sidebar item:", item);
 				item.style.display = "none";
 			}
 		});
 
 		const timesheetElement = document.querySelector('[data-id="RsafDhm1MS"]');
 		if (timesheetElement) {
-			console.log(
-				'Modifying link with data-id="RsafDhm1MS" to point to /app/custom-timesheet'
-			);
-
-			// Update the href to point to the custom timesheet page
 			timesheetElement.setAttribute("href", "/app/custom-timesheet");
-
-			// Optionally, to ensure the link is clickable and doesn't look like a disabled element
-			timesheetElement.style.pointerEvents = "auto"; // Enable interaction
-
-			// Trigger navigation programmatically (optional)
+			timesheetElement.style.pointerEvents = "auto"; 
 			timesheetElement.addEventListener("click", function (event) {
-				event.preventDefault(); // Prevent default behavior (optional)
-				window.location.href = "/app/custom-timesheet"; // Redirect to custom timesheet
+				event.preventDefault(); 
+				window.location.href = "/app/custom-timesheet"; 
 			});
 		}
 	}
 
 	// Function to handle DOM changes and re-hide timesheet elements
 	function handleTimesheetElements() {
-		console.log("Handling dynamic DOM changes...");
 		hideTimesheetElements();
 
 		// Re-run on DOM changes (for SPA navigation)
 		const observer = new MutationObserver(function (mutations) {
 			mutations.forEach(function (mutation) {
 				if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-					console.log("Detected DOM change, hiding Timesheet elements again...");
 					setTimeout(() => {
 						hideTimesheetElements();
 					}, 100);

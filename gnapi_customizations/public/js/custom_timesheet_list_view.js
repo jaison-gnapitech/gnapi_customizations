@@ -7,7 +7,6 @@ frappe.listview_settings['Custom Timesheet'] = {
 
     // onload method to initialize the list view and add buttons
     onload: function(listview) {
-        console.log('Custom Timesheet List View: Loading...');
 
         // Add custom filters
         listview.page.add_inner_button("Filter by Status", function() {
@@ -112,7 +111,5 @@ frappe.listview_settings['Custom Timesheet'] = {
     order_by: "modified desc",
     
     // Refresh method
-    refresh: function(listview) {
-        console.log('Custom Timesheet List View: Refreshed');
-    }
+    refresh: function(listview) {}
 };

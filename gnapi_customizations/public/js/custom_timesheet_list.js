@@ -1,10 +1,8 @@
 $(document).ready(function () {
-	console.log("Custom Timesheet List: Script loaded");
 
 	// Add custom filters for better timesheet management
 	function addCustomFilters() {
 		if (frappe.route && frappe.route[0] === "List" && frappe.route[1] === "Custom Timesheet") {
-			console.log("Custom Timesheet List: Adding custom filters");
 
 			// Add employee filter
 			frappe.route_options = frappe.route_options || {};
