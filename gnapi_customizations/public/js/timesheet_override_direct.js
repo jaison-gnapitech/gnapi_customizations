@@ -108,17 +108,41 @@
         });
     }
 
+    // Function to replace Timesheet button with Custom Timesheet button
+    function replaceTimesheetButton() {
+        console.log("Replacing Timesheet button...");
+
+        // Create a custom button
+        const customButton = document.createElement("a");
+        customButton.href = "/app/custom-timesheet"; // Link to the custom timesheet page
+        customButton.textContent = "Custom Timesheet"; // Text for the button
+        customButton.classList.add("btn", "btn-primary"); // Add button classes to style it
+
+        // Find the location where you want to place the custom button
+        const parentElement = document.querySelector(".some-container-for-buttons"); // Adjust this as needed
+        if (parentElement) {
+            console.log("Inserting Custom Timesheet button...");
+            parentElement.appendChild(customButton);
+        } else {
+            console.log("Could not find parent container for button.");
+        }
+    }
+
     // Function to handle DOM changes and re-hide timesheet elements
     function handleTimesheetElements() {
         console.log('Handling dynamic DOM changes...');
         hideTimesheetElements();
+        replaceTimesheetButton();
 
         // Re-run on DOM changes (for SPA navigation)
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                     console.log('Detected DOM change, hiding Timesheet elements again...');
-                    setTimeout(hideTimesheetElements, 100);
+                    setTimeout(() => {
+                        hideTimesheetElements();
+                        replaceTimesheetButton();
+                    }, 100);
                 }
             });
         });
@@ -132,7 +156,7 @@
     // Initialize override when Frappe is ready and perform the redirect check
     waitForFrappe();
 
-    // Start hiding Timesheet elements after a short delay to ensure all elements are loaded
+    // Start hiding Timesheet elements and replace the button after a short delay to ensure all elements are loaded
     setTimeout(handleTimesheetElements, 1000);
 
 })();
