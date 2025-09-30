@@ -85,7 +85,7 @@
         console.log("Hiding Timesheet elements...");
 
         // Hide Timesheet widget with data-doctype and aria-label
-        const timesheetWidget = document.querySelector('[data-doctype="Timesheet"][aria-label="Timesheet"]');
+        const timesheetWidget = document.querySelector('[aria-label="Timesheet"][data-widget-name="n8u94b92s8"]');
         if (timesheetWidget) {
             console.log("Timesheet widget detected, hiding it.");
             timesheetWidget.style.display = 'none';
@@ -119,7 +119,8 @@
         customButton.classList.add("btn", "btn-primary"); // Add button classes to style it
 
         // Find the location where you want to place the custom button
-        const parentElement = document.querySelector(".some-container-for-buttons"); // Adjust this as needed
+        const parentElement = document.querySelector(".your-actual-parent-selector"); // Update this to actual container
+
         if (parentElement) {
             console.log("Inserting Custom Timesheet button...");
             parentElement.appendChild(customButton);
