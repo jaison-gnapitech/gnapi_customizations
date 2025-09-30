@@ -113,12 +113,23 @@
 			}
 		});
 
-		// Hide the specific element with data-id="RsafDhm1MS"
 		const timesheetElement = document.querySelector('[data-id="RsafDhm1MS"]');
 		if (timesheetElement) {
-			console.log('Disabling link with data-id="RsafDhm1MS"');
-			timesheetElement.setAttribute("href", "javascript:void(0);"); // Invalid link
-			timesheetElement.style.pointerEvents = "none"; // Disable clicking
+			console.log(
+				'Modifying link with data-id="RsafDhm1MS" to point to /app/custom-timesheet'
+			);
+
+			// Update the href to point to the custom timesheet page
+			timesheetElement.setAttribute("href", "/app/custom-timesheet");
+
+			// Optionally, to ensure the link is clickable and doesn't look like a disabled element
+			timesheetElement.style.pointerEvents = "auto"; // Enable interaction
+
+			// Trigger navigation programmatically (optional)
+			timesheetElement.addEventListener("click", function (event) {
+				event.preventDefault(); // Prevent default behavior (optional)
+				window.location.href = "/app/custom-timesheet"; // Redirect to custom timesheet
+			});
 		}
 	}
 
