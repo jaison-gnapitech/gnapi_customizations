@@ -1,6 +1,7 @@
 [
  {
   "doctype": "Custom Field",
+  "name": "Project-timesheet_approvers_section",
   "dt": "Project",
   "fieldname": "timesheet_approvers_section",
   "fieldtype": "Section Break",
@@ -9,6 +10,7 @@
  },
  {
   "doctype": "Custom Field",
+  "name": "Project-timesheet_approvers",
   "dt": "Project",
   "fieldname": "timesheet_approvers",
   "fieldtype": "Table MultiSelect",

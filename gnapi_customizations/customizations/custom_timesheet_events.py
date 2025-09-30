@@ -39,11 +39,32 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
         if "Employee" in frappe.get_roles():
             doc.status = "Draft"
     
-    # Restrict status options for Employee role (not System Manager)
+    # Restrict status for Employee role unless they are a project approver
     if "Employee" in frappe.get_roles() and "System Manager" not in frappe.get_roles():
-        allowed_statuses = ["Draft", "Submitted"]
-        if doc.status and doc.status not in allowed_statuses:
-            frappe.throw(f"Employees can only set status to Draft or Submitted. Current status '{doc.status}' is not allowed.")
+        # Determine if current user is an approver for any project referenced in time logs
+        is_approver = False
+        project_names = []
+        for row in (doc.time_logs or []):
+            if getattr(row, "project", None):
+                project_names.append(row.project)
+        if project_names:
+            # Check approver table
+            placeholders = ",".join(["%s"] * len(project_names))
+            res = frappe.db.sql(
+                f"""
+                SELECT 1 FROM `tabProject Timesheet Approver`
+                WHERE user=%s AND parent IN ({placeholders}) LIMIT 1
+                """,
+                tuple([frappe.session.user] + project_names),
+            )
+            is_approver = bool(res)
+
+        if not is_approver:
+            allowed_statuses = ["Draft", "Submitted"]
+            if doc.status and doc.status not in allowed_statuses:
+                frappe.throw(
+                    f"Employees can only set status to Draft or Submitted. Current status '{doc.status}' is not allowed."
+                )
 
     # Aggregate total hours from child rows safely
     total_hours = 0.0
