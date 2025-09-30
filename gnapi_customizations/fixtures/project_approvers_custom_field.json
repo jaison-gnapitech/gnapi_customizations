@@ -2,11 +2,19 @@
  {
   "doctype": "Custom Field",
   "dt": "Project",
+  "fieldname": "timesheet_approvers_section",
+  "fieldtype": "Section Break",
+  "label": "Timesheet Approvals",
+  "insert_after": "status"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Project",
   "fieldname": "timesheet_approvers",
   "fieldtype": "Table MultiSelect",
   "label": "Timesheet Approvers",
   "options": "Project Timesheet Approver",
-  "insert_after": "status",
+  "insert_after": "timesheet_approvers_section",
   "description": "Select users who can approve timesheets for this project"
  }
 ]
