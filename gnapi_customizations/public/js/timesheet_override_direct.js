@@ -3,15 +3,19 @@
 
     // Wait for Frappe to be available before overriding
     function waitForFrappe() {
+        console.log('Checking Frappe availability...');
+        
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", waitForFrappe);
             return;
         }
 
         if (typeof frappe !== "undefined" && frappe.set_route) {
+            console.log('Frappe detected, proceeding with overriding...');
             overrideSetRoute();
             redirectToCustomTimesheet(); // Perform the redirect check when Frappe is ready
         } else {
+            console.log('Frappe not detected yet, retrying...');
             setTimeout(waitForFrappe, 100);
         }
     }
@@ -19,6 +23,7 @@
     // Redirect function to handle navigation to /app/timesheet
     function redirectToCustomTimesheet() {
         const currentRoute = window.location.pathname;
+        console.log('Current route:', currentRoute);
 
         // If the user navigates to `/app/timesheet`, redirect to `/app/custom-timesheet`
         if (currentRoute === '/app/timesheet') {
@@ -62,9 +67,11 @@
 
                 // If the route is still pointing to 'timesheet', redirect directly
                 if (finalRoute === 'timesheet') {
+                    console.log('Redirecting to custom-timesheet because of route override');
                     window.location.href = '/app/custom-timesheet'; // Directly change the URL
                 } else {
                     // --- Call the original set_route with validated and cleaned parameters ---
+                    console.log('Setting route:', finalRoute);
                     return originalSetRoute.apply(this, [finalRoute]);
                 }
             } catch (err) {
@@ -75,6 +82,8 @@
 
     // Function to hide Timesheet widgets and buttons
     function hideTimesheetElements() {
+        console.log("Hiding Timesheet elements...");
+
         // Hide Timesheet widget with data-doctype and aria-label
         const timesheetWidget = document.querySelector('[data-doctype="Timesheet"][aria-label="Timesheet"]');
         if (timesheetWidget) {
@@ -85,6 +94,7 @@
         // Hide any other Timesheet buttons or links
         const timesheetButtons = document.querySelectorAll('a[href*="/app/timesheet"], a[data-link*="/app/timesheet"]');
         timesheetButtons.forEach(button => {
+            console.log('Hiding Timesheet button:', button);
             button.style.display = 'none';
         });
 
@@ -92,24 +102,27 @@
         const sidebarItems = document.querySelectorAll('.sidebar-menu a');
         sidebarItems.forEach(item => {
             if (item.textContent.trim().toLowerCase() === 'timesheet') {
+                console.log('Hiding Timesheet sidebar item:', item);
                 item.style.display = 'none';
             }
         });
     }
 
-    // Enhanced function to handle DOM changes and hide elements
+    // Function to handle DOM changes and re-hide timesheet elements
     function handleTimesheetElements() {
+        console.log('Handling dynamic DOM changes...');
         hideTimesheetElements();
-        
+
         // Re-run on DOM changes (for SPA navigation)
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
                 if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    console.log('Detected DOM change, hiding Timesheet elements again...');
                     setTimeout(hideTimesheetElements, 100);
                 }
             });
         });
-        
+
         observer.observe(document.body, {
             childList: true,
             subtree: true
@@ -118,7 +131,8 @@
 
     // Initialize override when Frappe is ready and perform the redirect check
     waitForFrappe();
-    
-    // Start hiding Timesheet elements
+
+    // Start hiding Timesheet elements after a short delay to ensure all elements are loaded
     setTimeout(handleTimesheetElements, 1000);
+
 })();
