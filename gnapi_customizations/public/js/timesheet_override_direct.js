@@ -73,6 +73,52 @@
         };
     }
 
+    // Function to hide Timesheet widgets and buttons
+    function hideTimesheetElements() {
+        // Hide Timesheet widget with data-doctype and aria-label
+        const timesheetWidget = document.querySelector('[data-doctype="Timesheet"][aria-label="Timesheet"]');
+        if (timesheetWidget) {
+            console.log("Timesheet widget detected, hiding it.");
+            timesheetWidget.style.display = 'none';
+        }
+
+        // Hide any other Timesheet buttons or links
+        const timesheetButtons = document.querySelectorAll('a[href*="/app/timesheet"], a[data-link*="/app/timesheet"]');
+        timesheetButtons.forEach(button => {
+            button.style.display = 'none';
+        });
+
+        // Hide sidebar menu items with Timesheet text
+        const sidebarItems = document.querySelectorAll('.sidebar-menu a');
+        sidebarItems.forEach(item => {
+            if (item.textContent.trim().toLowerCase() === 'timesheet') {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Enhanced function to handle DOM changes and hide elements
+    function handleTimesheetElements() {
+        hideTimesheetElements();
+        
+        // Re-run on DOM changes (for SPA navigation)
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    setTimeout(hideTimesheetElements, 100);
+                }
+            });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
     // Initialize override when Frappe is ready and perform the redirect check
     waitForFrappe();
+    
+    // Start hiding Timesheet elements
+    setTimeout(handleTimesheetElements, 1000);
 })();
