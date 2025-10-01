@@ -6,7 +6,7 @@
   "fieldname": "approver_section",
   "fieldtype": "Section Break",
   "label": "Timesheet Approvers",
-  "insert_after": "notes"
+  "insert_after": "department"
  },
  {
   "doctype": "Custom Field", 
