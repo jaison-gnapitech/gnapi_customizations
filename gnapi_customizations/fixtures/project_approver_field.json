@@ -13,9 +13,8 @@
   "name": "Project-approver",
   "dt": "Project",
   "fieldname": "approver",
-  "fieldtype": "MultiSelectList",
+  "fieldtype": "Small Text",
   "label": "Approvers",
-  "options": "User",
   "insert_after": "approver_section"
  }
 ]

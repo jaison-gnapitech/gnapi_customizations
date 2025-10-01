@@ -14,9 +14,8 @@
   "name": "Customer-timesheet_approver",
   "dt": "Customer",
   "fieldname": "timesheet_approver",
-  "fieldtype": "MultiSelectList",
+  "fieldtype": "Small Text",
   "label": "Timesheet Approvers",
-  "options": "User",
   "insert_after": "timesheet_approver_section",
   "module": "Gnapi Customizations"
  }
