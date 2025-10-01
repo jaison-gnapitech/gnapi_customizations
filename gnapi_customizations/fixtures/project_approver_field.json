@@ -1,0 +1,21 @@
+[
+ {
+  "doctype": "Custom Field",
+  "name": "Project-approver_section",
+  "dt": "Project",
+  "fieldname": "approver_section",
+  "fieldtype": "Section Break",
+  "label": "Timesheet Approvers",
+  "insert_after": "users_section"
+ },
+ {
+  "doctype": "Custom Field", 
+  "name": "Project-approver",
+  "dt": "Project",
+  "fieldname": "approver",
+  "fieldtype": "Link",
+  "label": "Approver",
+  "options": "Approver",
+  "insert_after": "approver_section"
+ }
+]
