@@ -1,0 +1,59 @@
+[
+ {
+  "doctype": "Custom Field",
+  "name": "Custom Timesheet-approval_section",
+  "dt": "Custom Timesheet",
+  "fieldname": "approval_section",
+  "fieldtype": "Section Break",
+  "label": "Approval Details",
+  "insert_after": "status",
+  "module": "Gnapi Customizations"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Custom Timesheet-approval_status",
+  "dt": "Custom Timesheet",
+  "fieldname": "approval_status",
+  "fieldtype": "Select",
+  "label": "Approval Status",
+  "options": "Pending\nApproved\nRejected",
+  "default": "Pending",
+  "insert_after": "approval_section",
+  "module": "Gnapi Customizations",
+  "in_list_view": 1,
+  "in_standard_filter": 1
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Custom Timesheet-approved_by",
+  "dt": "Custom Timesheet",
+  "fieldname": "approved_by",
+  "fieldtype": "Link",
+  "label": "Approved By",
+  "options": "User",
+  "insert_after": "approval_status",
+  "module": "Gnapi Customizations",
+  "read_only": 1
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Custom Timesheet-approval_date",
+  "dt": "Custom Timesheet",
+  "fieldname": "approval_date",
+  "fieldtype": "Datetime",
+  "label": "Approval Date",
+  "insert_after": "approved_by",
+  "module": "Gnapi Customizations",
+  "read_only": 1
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Custom Timesheet-approval_comments",
+  "dt": "Custom Timesheet",
+  "fieldname": "approval_comments",
+  "fieldtype": "Small Text",
+  "label": "Approval Comments",
+  "insert_after": "approval_date",
+  "module": "Gnapi Customizations"
+ }
+]

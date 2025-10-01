@@ -9,6 +9,9 @@ frappe.ui.form.on('Custom Timesheet', {
 		
 		// Restrict status options for Employee role
 		restrictStatusForEmployee(frm);
+		
+		// Add approval buttons for approvers
+		add_approval_buttons(frm);
 	},
 	
 	onload: function(frm) {
@@ -390,4 +393,148 @@ function getFileIcon(ext) {
 		csv: '📋'
 	};
 	return icons[ext] || '📎';
+}
+
+// ==================== APPROVAL WORKFLOW FUNCTIONS ====================
+
+function add_approval_buttons(frm) {
+    // Only show approval buttons if user is an approver and timesheet is submitted but pending approval
+    if (frm.doc.docstatus === 1 && frm.doc.approval_status === 'Pending') {
+        check_if_user_is_approver(frm).then(is_approver => {
+            if (is_approver) {
+                // Add Approve button
+                frm.add_custom_button(__('Approve'), function() {
+                    approve_timesheet(frm);
+                }, __('Actions')).addClass('btn-success');
+                
+                // Add Reject button
+                frm.add_custom_button(__('Reject'), function() {
+                    reject_timesheet(frm);
+                }, __('Actions')).addClass('btn-danger');
+            }
+        });
+    }
+}
+
+function check_if_user_is_approver(frm) {
+    return new Promise((resolve) => {
+        if (!frm.doc.time_logs || frm.doc.time_logs.length === 0) {
+            resolve(false);
+            return;
+        }
+        
+        // Get unique projects from time logs
+        const projects = [...new Set(frm.doc.time_logs
+            .filter(row => row.project)
+            .map(row => row.project))];
+        
+        if (projects.length === 0) {
+            resolve(false);
+            return;
+        }
+        
+        // Check if current user is an approver for any of these projects
+        frappe.call({
+            method: 'frappe.client.get_list',
+            args: {
+                doctype: 'Project',
+                fields: ['name', 'approver'],
+                filters: {
+                    name: ['in', projects]
+                }
+            },
+            callback: function(r) {
+                if (r.message) {
+                    const current_user = frappe.session.user;
+                    const is_approver = r.message.some(project => {
+                        if (project.approver) {
+                            const approvers = project.approver.split(',').map(a => a.trim());
+                            return approvers.includes(current_user);
+                        }
+                        return false;
+                    });
+                    resolve(is_approver);
+                } else {
+                    resolve(false);
+                }
+            }
+        });
+    });
+}
+
+function approve_timesheet(frm) {
+    const d = new frappe.ui.Dialog({
+        title: 'Approve Timesheet',
+        fields: [
+            {
+                fieldtype: 'Small Text',
+                fieldname: 'comments',
+                label: 'Approval Comments',
+                reqd: false
+            }
+        ],
+        primary_action_label: 'Approve',
+        primary_action: function() {
+            const comments = d.get_value('comments');
+            
+            frappe.call({
+                method: 'gnapi_customizations.customizations.custom_timesheet_events.approve_timesheet',
+                args: {
+                    timesheet_name: frm.doc.name,
+                    comments: comments
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        frappe.msgprint(__('Timesheet approved successfully'));
+                        frm.reload_doc();
+                    }
+                }
+            });
+            
+            d.hide();
+        }
+    });
+    
+    d.show();
+}
+
+function reject_timesheet(frm) {
+    const d = new frappe.ui.Dialog({
+        title: 'Reject Timesheet',
+        fields: [
+            {
+                fieldtype: 'Small Text',
+                fieldname: 'comments',
+                label: 'Rejection Reason',
+                reqd: true
+            }
+        ],
+        primary_action_label: 'Reject',
+        primary_action: function() {
+            const comments = d.get_value('comments');
+            
+            if (!comments) {
+                frappe.msgprint(__('Please provide a reason for rejection'));
+                return;
+            }
+            
+            frappe.call({
+                method: 'gnapi_customizations.customizations.custom_timesheet_events.reject_timesheet',
+                args: {
+                    timesheet_name: frm.doc.name,
+                    comments: comments
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        frappe.msgprint(__('Timesheet rejected'));
+                        frm.reload_doc();
+                    }
+                }
+            });
+            
+            d.hide();
+        }
+    });
+    
+    d.show();
 }

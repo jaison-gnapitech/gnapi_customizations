@@ -200,3 +200,205 @@ def custom_timesheet_has_permission(doc: Document, user: str) -> bool:
                     return True
     
     return False
+
+# ==================== APPROVAL WORKFLOW METHODS ====================
+
+@frappe.whitelist()
+def approve_timesheet(timesheet_name: str, comments: str = "") -> dict:
+    """Approve a timesheet"""
+    try:
+        doc = frappe.get_doc("Custom Timesheet", timesheet_name)
+        
+        # Check if user is authorized to approve this timesheet
+        if not _can_user_approve_timesheet(doc, frappe.session.user):
+            frappe.throw("You are not authorized to approve this timesheet")
+        
+        # Update approval fields
+        doc.approval_status = "Approved"
+        doc.approved_by = frappe.session.user
+        doc.approval_date = frappe.utils.now()
+        doc.approval_comments = comments
+        
+        doc.save(ignore_permissions=True)
+        
+        # Send notification to employee
+        _send_approval_notification(doc, "approved", comments)
+        
+        return {"success": True, "message": "Timesheet approved successfully"}
+        
+    except Exception as e:
+        frappe.log_error(f"Error approving timesheet {timesheet_name}: {str(e)}")
+        frappe.throw(f"Error approving timesheet: {str(e)}")
+
+@frappe.whitelist()
+def reject_timesheet(timesheet_name: str, comments: str) -> dict:
+    """Reject a timesheet"""
+    try:
+        doc = frappe.get_doc("Custom Timesheet", timesheet_name)
+        
+        # Check if user is authorized to reject this timesheet
+        if not _can_user_approve_timesheet(doc, frappe.session.user):
+            frappe.throw("You are not authorized to reject this timesheet")
+        
+        # Update approval fields
+        doc.approval_status = "Rejected"
+        doc.approved_by = frappe.session.user
+        doc.approval_date = frappe.utils.now()
+        doc.approval_comments = comments
+        
+        doc.save(ignore_permissions=True)
+        
+        # Send notification to employee
+        _send_approval_notification(doc, "rejected", comments)
+        
+        return {"success": True, "message": "Timesheet rejected"}
+        
+    except Exception as e:
+        frappe.log_error(f"Error rejecting timesheet {timesheet_name}: {str(e)}")
+        frappe.throw(f"Error rejecting timesheet: {str(e)}")
+
+def _can_user_approve_timesheet(timesheet_doc: Document, user: str) -> bool:
+    """Check if user can approve the given timesheet"""
+    
+    # System Manager can approve any timesheet
+    if "System Manager" in frappe.get_roles(user):
+        return True
+    
+    # Get projects from timesheet time logs
+    project_names = []
+    for row in (timesheet_doc.time_logs or []):
+        if getattr(row, "project", None):
+            project_names.append(row.project)
+    
+    if not project_names:
+        return False
+    
+    # Check if user is an approver for any of these projects
+    projects = frappe.get_all("Project", 
+        filters={"name": ["in", project_names]}, 
+        fields=["name", "approver"])
+    
+    for project in projects:
+        if project.approver:
+            approvers = [a.strip() for a in project.approver.split(",")]
+            if user in approvers:
+                return True
+    
+    return False
+
+def _send_approval_notification(timesheet_doc: Document, action: str, comments: str):
+    """Send notification to employee about timesheet approval/rejection"""
+    try:
+        # Get employee's user ID
+        employee_user = frappe.db.get_value("Employee", timesheet_doc.employee, "user_id")
+        if not employee_user:
+            return
+        
+        subject = f"Timesheet {action.title()}: {timesheet_doc.name}"
+        
+        message = f"""
+        <p>Your timesheet <strong>{timesheet_doc.name}</strong> has been <strong>{action}</strong>.</p>
+        
+        <p><strong>Details:</strong></p>
+        <ul>
+            <li>Employee: {timesheet_doc.employee}</li>
+            <li>Status: {action.title()}</li>
+            <li>Approved/Rejected by: {frappe.session.user}</li>
+            <li>Date: {frappe.utils.format_datetime(frappe.utils.now())}</li>
+        </ul>
+        
+        {f"<p><strong>Comments:</strong><br>{comments}</p>" if comments else ""}
+        
+        <p>You can view your timesheet <a href="/app/custom-timesheet/{timesheet_doc.name}">here</a>.</p>
+        """
+        
+        frappe.sendmail(
+            recipients=[employee_user],
+            subject=subject,
+            message=message,
+            reference_doctype="Custom Timesheet",
+            reference_name=timesheet_doc.name
+        )
+        
+    except Exception as e:
+        frappe.log_error(f"Error sending approval notification: {str(e)}")
+
+def custom_timesheet_permission_query(user):
+    """Custom permission query for Custom Timesheet to show relevant timesheets to approvers"""
+    
+    if not user:
+        user = frappe.session.user
+    
+    # System Manager can see all timesheets
+    if "System Manager" in frappe.get_roles(user):
+        return ""
+    
+    conditions = []
+    
+    # Employee can see their own timesheets
+    employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+    if employee:
+        conditions.append(f"`tabCustom Timesheet`.employee = '{employee}'")
+    
+    # Approvers can see timesheets for projects they approve
+    # Get projects where user is an approver
+    approver_projects = frappe.db.sql("""
+        SELECT name 
+        FROM `tabProject` 
+        WHERE approver IS NOT NULL 
+        AND (approver LIKE %s OR approver LIKE %s OR approver LIKE %s OR approver = %s)
+    """, (f"%{user},%", f"%,{user}%", f"%,{user},%", user), as_dict=True)
+    
+    if approver_projects:
+        project_names = [p.name for p in approver_projects]
+        project_condition = "', '".join(project_names)
+        
+        # Timesheets that have time logs for projects this user approves
+        conditions.append(f"""
+            `tabCustom Timesheet`.name IN (
+                SELECT DISTINCT parent 
+                FROM `tabCustom Timesheet Detail` 
+                WHERE project IN ('{project_condition}')
+            )
+        """)
+    
+    if conditions:
+        return f"({' OR '.join(conditions)})"
+    else:
+        return "1=0"  # No access if no conditions match
+
+def custom_timesheet_has_permission(doc, user):
+    """Custom has_permission for Custom Timesheet"""
+    
+    if not user:
+        user = frappe.session.user
+    
+    # System Manager has full access
+    if "System Manager" in frappe.get_roles(user):
+        return True
+    
+    # Employee can access their own timesheets
+    employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+    if employee and doc.employee == employee:
+        return True
+    
+    # Check if user is an approver for any project in this timesheet
+    if hasattr(doc, 'time_logs') and doc.time_logs:
+        project_names = []
+        for row in doc.time_logs:
+            if getattr(row, "project", None):
+                project_names.append(row.project)
+        
+        if project_names:
+            # Check if user is an approver for any of these projects
+            projects = frappe.get_all("Project", 
+                filters={"name": ["in", project_names]}, 
+                fields=["approver"])
+            
+            for project in projects:
+                if project.approver:
+                    approvers = [a.strip() for a in project.approver.split(",")]
+                    if user in approvers:
+                        return True
+    
+    return False
