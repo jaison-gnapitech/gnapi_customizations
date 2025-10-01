@@ -6,7 +6,8 @@
   "fieldname": "approver_section",
   "fieldtype": "Section Break",
   "label": "Timesheet Approvers",
-  "insert_after": "department"
+  "insert_after": "department",
+  "module": "Gnapi Customizations"
  },
  {
   "doctype": "Custom Field", 
@@ -15,6 +16,7 @@
   "fieldname": "approver",
   "fieldtype": "Small Text",
   "label": "Approvers",
-  "insert_after": "approver_section"
+  "insert_after": "approver_section",
+  "module": "Gnapi Customizations"
  }
 ]
