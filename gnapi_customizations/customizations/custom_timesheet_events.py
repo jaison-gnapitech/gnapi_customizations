@@ -345,13 +345,14 @@ def custom_timesheet_has_permission(doc, user):
                 project_names.append(row.project)
         
         if project_names:
-            # Check if user is an approver for any of these projects
+            # Check if user is an approver for any of these projects using new structure
             projects = frappe.get_all("Project", 
                 filters={"name": ["in", project_names]}, 
-                fields=["approver"])
+                fields=["name", "approver"])
             
             for project in projects:
                 if project.approver:
+                    # Check if user is in the comma-separated list of approvers
                     approvers = [a.strip() for a in project.approver.split(",")]
                     if user in approvers:
                         return True
