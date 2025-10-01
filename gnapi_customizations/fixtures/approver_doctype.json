@@ -30,10 +30,10 @@
   "istable": 1,
   "fields": [
    {
-    "fieldname": "user",
+    "fieldname": "employee",
     "fieldtype": "Link",
-    "label": "User",
-    "options": "User",
+    "label": "Employee",
+    "options": "Employee",
     "reqd": 1,
     "in_list_view": 1
    }
