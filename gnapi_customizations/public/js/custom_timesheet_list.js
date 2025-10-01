@@ -1,23 +1,29 @@
 // Custom Timesheet List View Enhancements for Approvers
 frappe.listview_settings['Custom Timesheet'] = {
-    add_fields: ["approval_status", "employee", "approved_by"],
+    add_fields: ["employee", "status"],
     get_indicator: function(doc) {
-        if (doc.approval_status === "Approved") {
-            return [__("Approved"), "green", "approval_status,=,Approved"];
-        } else if (doc.approval_status === "Rejected") {
-            return [__("Rejected"), "red", "approval_status,=,Rejected"];
-        } else if (doc.approval_status === "Pending") {
-            return [__("Pending Approval"), "orange", "approval_status,=,Pending"];
+        // Use existing status field for now until approval_status is available
+        if (doc.status === "Approved") {
+            return [__("Approved"), "green", "status,=,Approved"];
+        } else if (doc.status === "Rejected") {
+            return [__("Rejected"), "red", "status,=,Rejected"];
+        } else if (doc.status === "Submitted") {
+            return [__("Pending Approval"), "orange", "status,=,Submitted"];
         }
-        return [__("Draft"), "gray", "docstatus,=,0"];
+        return [__("Draft"), "gray", "status,=,Draft"];
     },
     
     onload: function(listview) {
+        console.log('Custom Timesheet List View Loading...'); // Debug log
+        
         // Add employee filter button for approvers
         add_employee_filter_for_approvers(listview);
         
-        // Add approval status filters
+        // Add approval status filters  
         add_approval_status_filters(listview);
+        
+        // Always add My Approvals button for testing
+        add_my_approvals_button(listview);
     }
 };
 
@@ -48,17 +54,31 @@ function add_employee_filter_for_approvers(listview) {
 }
 
 function add_approval_status_filters(listview) {
-    // Add quick filter buttons
-    listview.page.add_inner_button(__('Pending Approval'), function() {
-        listview.filter_area.add([[listview.doctype, 'approval_status', '=', 'Pending']]);
+    // Add quick filter buttons using existing status field
+    listview.page.add_inner_button(__('Submitted'), function() {
+        listview.filter_area.clear();
+        listview.filter_area.add([[listview.doctype, 'status', '=', 'Submitted']]);
     });
     
     listview.page.add_inner_button(__('Approved'), function() {
-        listview.filter_area.add([[listview.doctype, 'approval_status', '=', 'Approved']]);
+        listview.filter_area.clear();
+        listview.filter_area.add([[listview.doctype, 'status', '=', 'Approved']]);
     });
     
-    listview.page.add_inner_button(__('Rejected'), function() {
-        listview.filter_area.add([[listview.doctype, 'approval_status', '=', 'Rejected']]);
+    listview.page.add_inner_button(__('Draft'), function() {
+        listview.filter_area.clear();
+        listview.filter_area.add([[listview.doctype, 'status', '=', 'Draft']]);
+    });
+}
+
+function add_my_approvals_button(listview) {
+    // Add My Approvals button for all users (for testing)
+    listview.page.add_menu_item(__('My Approvals'), function() {
+        show_my_approvals_simple(listview);
+    });
+    
+    listview.page.add_menu_item(__('Filter by Employee'), function() {
+        show_employee_filter_dialog(listview);
     });
 }
 
@@ -144,8 +164,8 @@ function show_my_approvals(listview) {
                     ]
                 ]);
                 
-                // Also add pending approval filter
-                listview.filter_area.add([[listview.doctype, 'approval_status', '=', 'Pending']]);
+                // Also add submitted status filter (pending approval)
+                listview.filter_area.add([[listview.doctype, 'status', '=', 'Submitted']]);
                 
                 frappe.show_alert({
                     message: __('Showing timesheets pending your approval'),
@@ -153,6 +173,48 @@ function show_my_approvals(listview) {
                 });
             } else {
                 frappe.msgprint(__('You are not set as an approver for any projects'));
+            }
+        }
+    });
+}
+
+function show_my_approvals_simple(listview) {
+    // Simplified version for testing
+    console.log('My Approvals clicked - Current user:', frappe.session.user);
+    
+    // Clear existing filters
+    listview.filter_area.clear();
+    
+    // Show only submitted timesheets for now
+    listview.filter_area.add([[listview.doctype, 'status', '=', 'Submitted']]);
+    
+    frappe.show_alert({
+        message: __('Showing submitted timesheets (test mode)'),
+        indicator: 'blue'
+    });
+    
+    // Also check if user has approver access
+    frappe.call({
+        method: 'frappe.client.get_list',
+        args: {
+            doctype: 'Project',
+            fields: ['name', 'approver'],
+            filters: {
+                approver: ['like', `%${frappe.session.user}%`]
+            }
+        },
+        callback: function(r) {
+            console.log('Projects where user is approver:', r.message);
+            if (r.message && r.message.length > 0) {
+                frappe.show_alert({
+                    message: __(`You are approver for ${r.message.length} project(s)`),
+                    indicator: 'green'
+                });
+            } else {
+                frappe.show_alert({
+                    message: __('You are not set as approver for any projects'),
+                    indicator: 'orange'
+                });
             }
         }
     });
