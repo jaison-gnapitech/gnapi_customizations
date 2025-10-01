@@ -1,48 +1,52 @@
 #!/bin/bash
 
-echo "🔄 Updating gnapi_customizations app with latest code from git..."
+echo "🔄 Updating gnapi_customizations app inside Docker from Git..."
 
-# Navigate to project root
-cd "$(dirname "$0")"
+# Get script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DOCKER_DIR="$SCRIPT_DIR/docker"
 
-# Pull latest code from git
-echo "📥 Pulling latest code from git repository..."
-git pull origin main
+CONTAINER_NAME="docker-frappe-1"
+APP_DIR="/home/frappe/frappe-bench/apps/gnapi_customizations"
+SITE_NAME="mysite.localhost"
+GIT_REPO="https://github.com/jaison-gnapitech/gnapi_customizations.git"
+BENCH_DIR="/home/frappe/frappe-bench"
 
-# Navigate to docker directory
-cd docker
+# Pull latest code inside container
+echo "📥 Pulling latest code from Git inside container..."
+docker-compose -f $DOCKER_DIR/docker-compose.yml exec -T -w $APP_DIR frappe bash -c "
+    set -e
 
-# Copy the entire gnapi_customizations directory to the container
-echo "📁 Copying local changes to container..."
-docker-compose exec frappe bash -c "mkdir -p /home/frappe/frappe-bench/apps/gnapi_customizations"
+    if [ ! -d .git ]; then
+        echo '⚠️ Git not initialized. Cloning repository...'
+        rm -rf $APP_DIR/*
+        git clone $GIT_REPO .
+    fi
 
-# Copy files from host to container using docker cp
-echo "📁 Copying files from host to container..."
-docker cp ../gnapi_customizations/. docker-frappe-1:/home/frappe/frappe-bench/apps/gnapi_customizations/
-
-# Verify and copy JavaScript files individually
-echo "📁 Ensuring JavaScript files are copied..."
-docker cp ../gnapi_customizations/public/js/custom_timesheet_navigation.js docker-frappe-1:/home/frappe/frappe-bench/apps/gnapi_customizations/public/js/custom_timesheet_navigation.js
-docker cp ../gnapi_customizations/public/js/timesheet_navigation_override.js docker-frappe-1:/home/frappe/frappe-bench/apps/gnapi_customizations/public/js/timesheet_navigation_override.js
-docker cp ../gnapi_customizations/public/js/timesheet_override_direct.js docker-frappe-1:/home/frappe/frappe-bench/apps/gnapi_customizations/public/js/timesheet_override_direct.js
-
-echo "✅ Local changes copied to container"
-
-# Execute commands inside the Frappe container
-docker-compose exec frappe bash -c "
-    cd /home/frappe/frappe-bench
-    
-    echo '🔧 Running migration to apply changes...'
-    bench --site mysite.localhost migrate
-    
-    echo '🧹 Clearing cache...'
-    bench --site mysite.localhost clear-cache
-    
-    echo '🔄 Restarting services...'
-    bench restart
-    
-    echo '✅ App updated successfully with latest code from git!'
+    git fetch origin main
+    git reset --hard origin/main
+    git clean -fd
+    echo '✅ Latest code from Git applied.'
 "
 
-echo "🚀 gnapi_customizations app has been updated with latest code from git!"
-echo "📱 Access your site at: http://localhost:8000"
+# Apply changes in ERPNext
+echo "🔧 Running migrations, clearing cache, and restarting services..."
+docker-compose -f $DOCKER_DIR/docker-compose.yml exec -T -w $BENCH_DIR frappe bash -c "
+    set -e
+    echo '🔧 Running migrate...'
+    bench --site $SITE_NAME migrate
+
+    echo '🧹 Clearing cache...'
+    bench --site $SITE_NAME clear-cache
+    bench --site $SITE_NAME clear-website-cache
+
+    echo '🔨 Building assets...'
+    bench build --app gnapi_customizations
+
+    echo '🔄 Restarting services...'
+    bench restart
+
+    echo '✅ gnapi_customizations updated and active!'
+"
+
+echo "🚀 Update complete! Access your site at: http://localhost:8000"
