@@ -1,6 +1,57 @@
 (function () {
 	"use strict";
 
+	// ===== Global Debug Harness =====
+	if (!window.__GNAPI_DEBUG_INSTALLED__) {
+		window.__GNAPI_DEBUG_INSTALLED__ = true;
+		try {
+			window.addEventListener('error', function (e) {
+				console.error('[GNAPI DEBUG] window.error:', e.message, 'at', e.filename + ':' + e.lineno + ':' + e.colno, e.error || '');
+			});
+			window.addEventListener('unhandledrejection', function (e) {
+				console.error('[GNAPI DEBUG] unhandledrejection:', e.reason);
+			});
+			// Wrap frappe.call to log failures
+			if (window.frappe && frappe.call && !frappe.__call_wrapped__) {
+				const origCall = frappe.call.bind(frappe);
+				frappe.call = function (opts) {
+					const label = `[GNAPI DEBUG] frappe.call ${opts && (opts.method || opts.url) || ''}`;
+					console.log(label, 'args:', opts && opts.args);
+					const wrapped = Object.assign({}, opts, {
+						callback: function (r) {
+							console.log(label, 'success:', r);
+							opts && opts.callback && opts.callback(r);
+						},
+						error: function (r) {
+							console.error(label, 'error:', r);
+							opts && opts.error && opts.error(r);
+						}
+					});
+					return origCall(wrapped);
+				};
+				frappe.__call_wrapped__ = true;
+			}
+			// Fetch/XHR logging
+			if (!window.__fetch_wrapped__ && window.fetch) {
+				const origFetch = window.fetch.bind(window);
+				window.fetch = function () {
+					const url = arguments[0];
+					console.log('[GNAPI DEBUG] fetch:', url);
+					return origFetch.apply(window, arguments).then(res => {
+						if (!res.ok) console.error('[GNAPI DEBUG] fetch failed:', url, res.status, res.statusText);
+						return res;
+					}).catch(err => {
+						console.error('[GNAPI DEBUG] fetch exception:', url, err);
+						throw err;
+					});
+				};
+				window.__fetch_wrapped__ = true;
+			}
+		} catch (e) {
+			console.error('[GNAPI DEBUG] setup error', e);
+		}
+	}
+
 	// Wait for Frappe to be available before overriding
 	function waitForFrappe() {
 		if (document.readyState === "loading") {
