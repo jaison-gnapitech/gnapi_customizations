@@ -11,8 +11,9 @@ fixtures = [
         {"doctype": "DocType", "filters": [["module", "=", "Gnapi Customizations"]]},
         {"doctype": "Social Login Key", "filters": [["provider_name", "in", ["Office 365"]]]},
         {"doctype": "Property Setter", "filters": [["doc_type", "=", "Employee"]]},
-        "gnapi_customizations/fixtures/project_approvers_custom_field.json",
-        "gnapi_customizations/fixtures/project_timesheet_approver_doctype.json"
+        # Import child DocType before the Custom Field that references it
+        "gnapi_customizations/fixtures/project_timesheet_approver_doctype.json",
+        "gnapi_customizations/fixtures/project_approvers_custom_field.json"
 ]
 # Apps
 # ------------------
