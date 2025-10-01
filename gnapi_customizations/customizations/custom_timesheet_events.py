@@ -48,16 +48,14 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
             if getattr(row, "project", None):
                 project_names.append(row.project)
         if project_names:
-            # Check approver table
-            placeholders = ",".join(["%s"] * len(project_names))
-            res = frappe.db.sql(
-                f"""
-                SELECT 1 FROM `tabProject Timesheet Approver`
-                WHERE user=%s AND parent IN ({placeholders}) LIMIT 1
-                """,
-                tuple([frappe.session.user] + project_names),
-            )
-            is_approver = bool(res)
+            # Check if user is creator of any project
+            project_creators = frappe.db.sql("""
+                SELECT DISTINCT owner FROM `tabProject` 
+                WHERE name IN ({})
+            """.format(",".join(["%s"] * len(project_names))), 
+            project_names, as_dict=True)
+            
+            is_approver = any(pc.owner == frappe.session.user for pc in project_creators)
 
         if not is_approver:
             allowed_statuses = ["Draft", "Submitted"]
@@ -137,16 +135,16 @@ def custom_timesheet_permission_query(user: str) -> str:
     if "Employee" in roles and employee:
         conditions.append(f"`tabCustom Timesheet`.`employee` = {frappe.db.escape(employee)}")
     
-    # Users listed as approvers in projects can see timesheets for those projects (Submitted/Approved/Rejected only)
-    # Get all projects where this user is an approver
-    projects_where_approver = frappe.db.sql("""
-        SELECT DISTINCT `parent` 
-        FROM `tabProject Timesheet Approver`
-        WHERE `user` = %s
+    # Users who created projects can see timesheets for those projects (Submitted/Approved/Rejected only)
+    # Get all projects where this user is the creator
+    projects_where_creator = frappe.db.sql("""
+        SELECT DISTINCT `name` 
+        FROM `tabProject`
+        WHERE `owner` = %s
     """, (user,), as_dict=False)
     
-    if projects_where_approver:
-        project_list = "','".join([frappe.db.escape(p[0]) for p in projects_where_approver])
+    if projects_where_creator:
+        project_list = "','".join([frappe.db.escape(p[0]) for p in projects_where_creator])
         conditions.append(
             f"(EXISTS (SELECT 1 FROM `tabCustom Timesheet Detail` "
             f"WHERE `tabCustom Timesheet Detail`.`parent` = `tabCustom Timesheet`.`name` "
@@ -186,12 +184,9 @@ def custom_timesheet_has_permission(doc: Document, user: str) -> bool:
         for time_log in (doc.time_logs or []):
             project = getattr(time_log, "project", None)
             if project:
-                # Check if user is in approvers list for this project
-                is_approver = frappe.db.exists("Project Timesheet Approver", {
-                    "parent": project,
-                    "user": user
-                })
-                if is_approver:
+                # Check if user is the creator of this project
+                project_creator = frappe.db.get_value("Project", project, "owner")
+                if project_creator == user:
                     return True
     
     return False
