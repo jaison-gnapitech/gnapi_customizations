@@ -89,10 +89,23 @@ function update_display(frm, fieldname) {
     const field = frm.get_field(fieldname);
     const value = frm.doc[fieldname] || '';
     
-    if (value) {
-        const users = value.split(',').map(u => u.trim());
-        const display = `Selected: ${users.length} user(s) - ${users.join(', ')}`;
-        field.$input.after(`<div class="text-muted small" id="${fieldname}_display">${display}</div>`);
-        $(`#${fieldname}_display`).prev(`#${fieldname}_display`).remove(); // Remove previous display
+    // Remove any existing display
+    $(`#${fieldname}_display`).remove();
+    
+    if (value && value.trim()) {
+        const users = value.split(',').map(u => u.trim()).filter(u => u); // Filter out empty strings
+        if (users.length > 0) {
+            const display = `<div class="text-muted small" id="${fieldname}_display" style="margin-top: 5px;">
+                <strong>Selected:</strong> ${users.length} user(s)<br>
+                <span style="font-size: 11px;">${users.join(', ')}</span>
+            </div>`;
+            field.$input.siblings('.approver-select-btn').after(display);
+        }
+    } else {
+        // Show message when no users are selected
+        const display = `<div class="text-muted small" id="${fieldname}_display" style="margin-top: 5px;">
+            <em>No approvers selected</em>
+        </div>`;
+        field.$input.siblings('.approver-select-btn').after(display);
     }
 }
