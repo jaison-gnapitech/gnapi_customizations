@@ -136,25 +136,22 @@ def custom_timesheet_permission_query(user: str) -> str:
         conditions.append(f"`tabCustom Timesheet`.`employee` = {frappe.db.escape(employee)}")
     
     # Users who are approvers for projects can see timesheets for those projects (Submitted/Approved/Rejected only)
-    # Get all projects where this user is an approver
-    employee = _get_employee_for_user(user)
-    if employee:
-        projects_where_approver = frappe.db.sql("""
-            SELECT DISTINCT p.name 
-            FROM `tabProject` p
-            INNER JOIN `tabApprover` a ON p.approver = a.name
-            INNER JOIN `tabApprover User` au ON a.name = au.parent
-            WHERE au.employee = %s
-        """, (employee,), as_dict=False)
-        
-        if projects_where_approver:
-            project_list = "','".join([frappe.db.escape(p[0]) for p in projects_where_approver])
-            conditions.append(
-                f"(EXISTS (SELECT 1 FROM `tabCustom Timesheet Detail` "
-                f"WHERE `tabCustom Timesheet Detail`.`parent` = `tabCustom Timesheet`.`name` "
-                f"AND `tabCustom Timesheet Detail`.`project` IN ('{project_list}')) "
-                f"AND `tabCustom Timesheet`.`status` IN ('Submitted', 'Approved', 'Rejected'))"
-            )
+    # Get all projects where this user is an approver (using new direct user-based approver field)
+    projects_where_approver = frappe.db.sql("""
+        SELECT DISTINCT name 
+        FROM `tabProject` 
+        WHERE approver IS NOT NULL 
+        AND (approver LIKE %s OR approver LIKE %s OR approver LIKE %s OR approver = %s)
+    """, (f"%{user},%", f"%,{user}%", f"%,{user},%", user), as_dict=False)
+    
+    if projects_where_approver:
+        project_list = "','".join([frappe.db.escape(p[0]) for p in projects_where_approver])
+        conditions.append(
+            f"(EXISTS (SELECT 1 FROM `tabCustom Timesheet Detail` "
+            f"WHERE `tabCustom Timesheet Detail`.`parent` = `tabCustom Timesheet`.`name` "
+            f"AND `tabCustom Timesheet Detail`.`project` IN ('{project_list}')) "
+            f"AND `tabCustom Timesheet`.`status` IN ('Submitted', 'Approved', 'Rejected'))"
+        )
     
     # Combine conditions with OR
     if conditions:
@@ -323,49 +320,7 @@ def _send_approval_notification(timesheet_doc: Document, action: str, comments: 
     except Exception as e:
         frappe.log_error(f"Error sending approval notification: {str(e)}")
 
-def custom_timesheet_permission_query(user):
-    """Custom permission query for Custom Timesheet to show relevant timesheets to approvers"""
-    
-    if not user:
-        user = frappe.session.user
-    
-    # System Manager can see all timesheets
-    if "System Manager" in frappe.get_roles(user):
-        return ""
-    
-    conditions = []
-    
-    # Employee can see their own timesheets
-    employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
-    if employee:
-        conditions.append(f"`tabCustom Timesheet`.employee = '{employee}'")
-    
-    # Approvers can see timesheets for projects they approve
-    # Get projects where user is an approver
-    approver_projects = frappe.db.sql("""
-        SELECT name 
-        FROM `tabProject` 
-        WHERE approver IS NOT NULL 
-        AND (approver LIKE %s OR approver LIKE %s OR approver LIKE %s OR approver = %s)
-    """, (f"%{user},%", f"%,{user}%", f"%,{user},%", user), as_dict=True)
-    
-    if approver_projects:
-        project_names = [p.name for p in approver_projects]
-        project_condition = "', '".join(project_names)
-        
-        # Timesheets that have time logs for projects this user approves
-        conditions.append(f"""
-            `tabCustom Timesheet`.name IN (
-                SELECT DISTINCT parent 
-                FROM `tabCustom Timesheet Detail` 
-                WHERE project IN ('{project_condition}')
-            )
-        """)
-    
-    if conditions:
-        return f"({' OR '.join(conditions)})"
-    else:
-        return "1=0"  # No access if no conditions match
+# Removed duplicate function - using the one above
 
 def custom_timesheet_has_permission(doc, user):
     """Custom has_permission for Custom Timesheet"""
