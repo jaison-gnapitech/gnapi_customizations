@@ -59,7 +59,8 @@ doctype_js = {
     "Project": "public/js/project_timesheet_approvers.js",
     "Customer": "public/js/customer_timesheet_approvers.js"
 }
-doctype_list_js = {"Custom Timesheet" : "public/js/custom_timesheet_list.js"}
+# Temporarily disabled to fix hanging API calls
+# doctype_list_js = {"Custom Timesheet" : "public/js/custom_timesheet_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -162,13 +163,14 @@ doc_events = {
     }
 }
 
-permission_query_conditions = {
-    "Custom Timesheet": "gnapi_customizations.customizations.custom_timesheet_events.custom_timesheet_permission_query"
-}
+# Temporarily disabled to fix hanging API calls
+# permission_query_conditions = {
+#     "Custom Timesheet": "gnapi_customizations.customizations.custom_timesheet_events.custom_timesheet_permission_query"
+# }
 
-has_permission = {
-    "Custom Timesheet": "gnapi_customizations.customizations.custom_timesheet_events.custom_timesheet_has_permission"
-}
+# has_permission = {
+#     "Custom Timesheet": "gnapi_customizations.customizations.custom_timesheet_events.custom_timesheet_has_permission"
+# }
 
 # Scheduled Tasks
 # ---------------
