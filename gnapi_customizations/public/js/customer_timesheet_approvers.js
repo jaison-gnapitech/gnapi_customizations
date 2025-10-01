@@ -9,11 +9,16 @@ function setup_approver_multiselect(frm, fieldname, doctype) {
     const field = frm.get_field(fieldname);
     if (!field) return;
     
+    // Check if button already exists to prevent duplicates
+    if (field.$input.siblings('.approver-select-btn').length > 0) {
+        return;
+    }
+    
     // Hide the default input
     field.$input.hide();
     
-    // Create custom multi-select button
-    const $btn = $(`<button class="btn btn-default btn-sm" style="margin-top: 5px;">
+    // Create custom multi-select button with unique class
+    const $btn = $(`<button class="btn btn-default btn-sm approver-select-btn" style="margin-top: 5px;">
         <i class="fa fa-users"></i> Select Approvers
     </button>`);
     
