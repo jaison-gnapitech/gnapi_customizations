@@ -358,3 +358,42 @@ def custom_timesheet_has_permission(doc, user):
                         return True
     
     return False
+
+@frappe.whitelist()
+def debug_approver_access(user_email=None):
+    """Debug function to check approver access for a specific user"""
+    if not user_email:
+        user_email = frappe.session.user
+    
+    result = {
+        "user": user_email,
+        "projects_as_approver": [],
+        "timesheets_visible": [],
+        "permission_query": ""
+    }
+    
+    # Get projects where user is approver
+    projects = frappe.db.sql("""
+        SELECT name, approver 
+        FROM `tabProject` 
+        WHERE approver IS NOT NULL 
+        AND (approver LIKE %s OR approver LIKE %s OR approver LIKE %s OR approver = %s)
+    """, (f"%{user_email},%", f"%,{user_email}%", f"%,{user_email},%", user_email), as_dict=True)
+    
+    result["projects_as_approver"] = projects
+    
+    # Get permission query result
+    permission_query = custom_timesheet_permission_query(user_email)
+    result["permission_query"] = permission_query
+    
+    # Get timesheets that would be visible
+    if permission_query and permission_query != "1=0":
+        timesheets = frappe.db.sql(f"""
+            SELECT name, employee, status 
+            FROM `tabCustom Timesheet` 
+            WHERE {permission_query}
+            LIMIT 10
+        """, as_dict=True)
+        result["timesheets_visible"] = timesheets
+    
+    return result
