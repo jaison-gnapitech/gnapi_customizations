@@ -56,7 +56,8 @@ app_include_js = [
 # include js in doctype views
 doctype_js = {
     "Custom Timesheet": "public/js/custom_timesheet.js",
-    "Project": "public/js/project_timesheet_approvers.js"
+    "Project": "public/js/project_timesheet_approvers.js",
+    "Customer": "public/js/customer_timesheet_approvers.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
