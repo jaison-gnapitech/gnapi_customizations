@@ -57,8 +57,7 @@ doctype_js = {
     "Project": "public/js/project_timesheet_approvers.js",
     "Customer": "public/js/customer_timesheet_approvers.js"
 }
-# Temporarily disabled to debug undefined method error
-# doctype_list_js = {"Custom Timesheet" : "public/js/custom_timesheet_list.js"}
+doctype_list_js = {"Custom Timesheet" : "public/js/custom_timesheet_list_simple.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
