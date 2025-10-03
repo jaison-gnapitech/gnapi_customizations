@@ -27,10 +27,18 @@
 					if (route[1] && route[1].toLowerCase() === "timesheet") {
 						route[1] = "Custom Timesheet";
 					}
+					// When route is an array, call with a single argument to avoid appending 'undefined'
+					return originalSetRoute.call(this, route);
 				} else if (typeof route === "string" && route.toLowerCase() === "timesheet") {
 					route = ["List", "Custom Timesheet"];
+					return originalSetRoute.call(this, route);
 				}
-				return originalSetRoute.apply(this, [route, name, filters]);
+				// For non-array routes, pass only defined args to avoid '/undefined' in URL
+				const args = [];
+				if (typeof route !== "undefined") args.push(route);
+				if (typeof name !== "undefined") args.push(name);
+				if (typeof filters !== "undefined") args.push(filters);
+				return originalSetRoute.apply(this, args);
 			} catch (err) {
 				console.error(err);
 			}
