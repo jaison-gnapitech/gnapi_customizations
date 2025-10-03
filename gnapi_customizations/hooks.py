@@ -34,9 +34,7 @@ fixtures = [
 # include js, css files in header of desk.html
 # app_include_css = "/assets/gnapi_customizations/css/gnapi_customizations.css"
 app_include_js = [
-    "/assets/gnapi_customizations/js/timesheet_override_direct.js?v=3",
-    "/assets/gnapi_customizations/js/custom_timesheet_list.js?v=1",
-    "/assets/gnapi_customizations/js/custom_timesheet_list_view.js?v=1"
+    "/assets/gnapi_customizations/js/timesheet_override_direct.js?v=3"
 ]
 
 # include js, css files in header of web template
@@ -59,8 +57,7 @@ doctype_js = {
     "Project": "public/js/project_timesheet_approvers.js",
     "Customer": "public/js/customer_timesheet_approvers.js"
 }
-# Temporarily disabled to fix hanging API calls
-# doctype_list_js = {"Custom Timesheet" : "public/js/custom_timesheet_list.js"}
+doctype_list_js = {"Custom Timesheet" : "public/js/custom_timesheet_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
