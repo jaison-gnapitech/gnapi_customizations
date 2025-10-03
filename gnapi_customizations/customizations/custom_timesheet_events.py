@@ -46,15 +46,20 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
             else:
                 frappe.throw("End date/time must be after start date/time")
     
-    # Validate required fields
-    if not doc.project:
-        frappe.throw("Project is required")
-    
-    if not doc.start_date or not doc.start_time:
-        frappe.throw("Start Date and Start Time are required")
-    
-    if not doc.end_date or not doc.end_time:
-        frappe.throw("End Date and End Time are required")
+    # Validate required fields only if they exist on this DocType
+    meta = frappe.get_meta(doc.doctype)
+
+    if meta.has_field("project"):
+        if not getattr(doc, "project", None):
+            frappe.throw("Project is required")
+
+    if meta.has_field("start_date") or meta.has_field("start_time"):
+        if not getattr(doc, "start_date", None) or not getattr(doc, "start_time", None):
+            frappe.throw("Start Date and Start Time are required")
+
+    if meta.has_field("end_date") or meta.has_field("end_time"):
+        if not getattr(doc, "end_date", None) or not getattr(doc, "end_time", None):
+            frappe.throw("End Date and End Time are required")
 
 def on_custom_timesheet_before_save(doc: Document, method: str | None = None) -> None:
     # Recalculate taken_hours for each time log row if both datetimes exist
