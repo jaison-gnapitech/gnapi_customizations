@@ -16,64 +16,45 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
         else:
             frappe.throw(f"No Employee record linked to user {frappe.session.user}")
 
-    # Auto-assign approver based on project creator (only if approver field exists)
-    if hasattr(doc, "approver") and doc.time_logs and len(doc.time_logs) > 0:
-        # Get the first project from time logs
-        project_name = None
-        for row in doc.time_logs:
-            if getattr(row, "project", None):
-                project_name = row.project
-                break
-        
-        # Set approver to project owner/creator if not already set
-        if project_name and not doc.approver:
-            project_owner = frappe.db.get_value("Project", project_name, "owner")
-            if project_owner:
-                # Try to get employee linked to project owner
-                approver_employee = frappe.db.get_value("Employee", {"user_id": project_owner}, "name")
-                if approver_employee:
-                    doc.approver = approver_employee
-
-    # Default status handling for Employees
+    # Default status handling
     if not doc.status:
-        if "Employee" in frappe.get_roles():
-            doc.status = "Draft"
+        doc.status = "Draft"
     
-    # Restrict status for Employee role unless they are a project approver
+    # Set approval status based on user role
     if "Employee" in frappe.get_roles() and "System Manager" not in frappe.get_roles():
-        # Determine if current user is an approver for any project referenced in time logs
-        is_approver = False
-        project_names = []
-        for row in (doc.time_logs or []):
-            if getattr(row, "project", None):
-                project_names.append(row.project)
-        if project_names:
-            # Check if user is creator of any project
-            project_creators = frappe.db.sql("""
-                SELECT DISTINCT owner FROM `tabProject` 
-                WHERE name IN ({})
-            """.format(",".join(["%s"] * len(project_names))), 
-            project_names, as_dict=True)
+        # Employees can only set status to Draft or Submitted
+        allowed_statuses = ["Draft", "Submitted"]
+        if doc.status and doc.status not in allowed_statuses:
+            frappe.throw(
+                f"Employees can only set status to Draft or Submitted. Current status '{doc.status}' is not allowed."
+            )
+        
+        # Set approval status to Pending for employees
+        doc.approval_status = "Pending"
+    
+    # Calculate total hours from start/end times
+    if hasattr(doc, 'start_date') and hasattr(doc, 'start_time') and hasattr(doc, 'end_date') and hasattr(doc, 'end_time'):
+        if doc.start_date and doc.start_time and doc.end_date and doc.end_time:
+            from frappe.utils import get_datetime, time_diff_in_seconds
             
-            is_approver = any(pc.owner == frappe.session.user for pc in project_creators)
-
-        if not is_approver:
-            allowed_statuses = ["Draft", "Submitted"]
-            if doc.status and doc.status not in allowed_statuses:
-                frappe.throw(
-                    f"Employees can only set status to Draft or Submitted. Current status '{doc.status}' is not allowed."
-                )
-
-    # Aggregate total hours from child rows safely
-    total_hours = 0.0
-    for row in (doc.time_logs or []):
-        try:
-            if row.taken_hours and float(row.taken_hours) > 0:
-                total_hours += float(row.taken_hours)
-        except Exception:
-            # Ignore malformed values, treat as zero
-            continue
-    doc.total_hours = round(total_hours, 2)
+            start_datetime = get_datetime(f"{doc.start_date} {doc.start_time}")
+            end_datetime = get_datetime(f"{doc.end_date} {doc.end_time}")
+            
+            if end_datetime > start_datetime:
+                total_seconds = time_diff_in_seconds(end_datetime, start_datetime)
+                doc.total_hours = round(total_seconds / 3600, 2)  # Convert seconds to hours
+            else:
+                frappe.throw("End date/time must be after start date/time")
+    
+    # Validate required fields
+    if not doc.project:
+        frappe.throw("Project is required")
+    
+    if not doc.start_date or not doc.start_time:
+        frappe.throw("Start Date and Start Time are required")
+    
+    if not doc.end_date or not doc.end_time:
+        frappe.throw("End Date and End Time are required")
 
 def on_custom_timesheet_before_save(doc: Document, method: str | None = None) -> None:
     # Recalculate taken_hours for each time log row if both datetimes exist

@@ -118,15 +118,10 @@ def create_approval_for_timesheet(timesheet_name):
     try:
         timesheet_doc = frappe.get_doc("Custom Timesheet", timesheet_name)
         
-        # Get projects from timesheet details
-        projects = set()
-        if timesheet_doc.time_logs:
-            for log in timesheet_doc.time_logs:
-                if log.project:
-                    projects.add(log.project)
+        # Get project from timesheet
+        project_name = timesheet_doc.project
         
-        # Create approval records for each project
-        for project_name in projects:
+        if project_name:
             project_doc = frappe.get_doc("Project", project_name)
             
             if project_doc.approver:
