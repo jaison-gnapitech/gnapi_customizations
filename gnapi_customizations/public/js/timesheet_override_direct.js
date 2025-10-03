@@ -11,7 +11,10 @@
 	}
 
 	function redirectToCustomTimesheet() {
-		if (window.location.pathname === "/app/timesheet") {
+		// Only redirect if we're specifically on the timesheet list page, not during setup
+		if (window.location.pathname === "/app/timesheet" && 
+			!window.location.pathname.includes("setup-wizard") &&
+			!window.location.pathname.includes("install")) {
 			frappe.set_route(["List", "Custom Timesheet"]);
 		}
 	}
@@ -23,6 +26,12 @@
 		const originalSetRoute = frappe.set_route;
 		frappe.set_route = function (route, name, filters) {
 			try {
+				// Don't interfere with setup wizard or installation routes
+				if (window.location.pathname.includes("setup-wizard") || 
+					window.location.pathname.includes("install")) {
+					return originalSetRoute.apply(this, arguments);
+				}
+				
 				if (Array.isArray(route)) {
 					if (route[1] && route[1].toLowerCase() === "timesheet") {
 						route[1] = "Custom Timesheet";
