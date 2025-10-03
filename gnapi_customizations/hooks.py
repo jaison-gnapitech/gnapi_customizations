@@ -33,10 +33,9 @@ fixtures = [
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/gnapi_customizations/css/gnapi_customizations.css"
-# Temporarily disable all JavaScript to isolate the issue
-# app_include_js = [
-#     "/assets/gnapi_customizations/js/timesheet_override_direct.js?v=3"
-# ]
+app_include_js = [
+    "/assets/gnapi_customizations/js/timesheet_override_direct.js?v=3"
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/gnapi_customizations/css/gnapi_customizations.css"
@@ -53,12 +52,12 @@ fixtures = [
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# Temporarily disable all JavaScript to isolate the issue
-# doctype_js = {
-#     "Custom Timesheet": "public/js/custom_timesheet.js",
-#     "Project": "public/js/project_timesheet_approvers.js",
-#     "Customer": "public/js/customer_timesheet_approvers.js"
-# }
+doctype_js = {
+    "Custom Timesheet": "public/js/custom_timesheet.js",
+    "Project": "public/js/project_timesheet_approvers.js",
+    "Customer": "public/js/customer_timesheet_approvers.js"
+}
+# Keep list view JavaScript disabled for now
 # doctype_list_js = {"Custom Timesheet" : "public/js/custom_timesheet_list_simple.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
