@@ -130,6 +130,7 @@
 			return;
 		}
 		const observer = new MutationObserver(() => {
+			if (isSetupWizard()) return;
 			hideTimesheetElements();
 			renameCustomTimesheetLabels();
 			addMyApprovalsButton();
@@ -151,6 +152,7 @@
 			$(document).on("page-change route-change", () => {
 				console.log("[gnapi] route/page change detected");
 				setTimeout(() => {
+					if (isSetupWizard()) return;
 					hideTimesheetElements();
 					renameCustomTimesheetLabels();
 					addMyApprovalsButton();
