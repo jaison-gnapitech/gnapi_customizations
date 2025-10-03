@@ -1,0 +1,248 @@
+{
+ "actions": [],
+ "allow_auto_repeat": 0,
+ "allow_copy": 0,
+ "allow_guest_to_view": 0,
+ "allow_import": 0,
+ "allow_rename": 1,
+ "autoname": "hash",
+ "beta": 0,
+ "creation": "2025-10-03 11:58:45.418386",
+ "custom": 1,
+ "default_view": "List",
+ "description": "Custom timesheet for tracking employee work hours",
+ "docstatus": 0,
+ "doctype": "DocType",
+ "document_type": "",
+ "editable_grid": 1,
+ "email_append_to": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "total_hours",
+  "status",
+  "approval_section",
+  "approval_status",
+  "approved_by",
+  "approval_date",
+  "approval_comments",
+  "timesheet_details",
+  "time_logs",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "total_hours",
+   "fieldtype": "Float",
+   "label": "Total Hours",
+   "precision": "2",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nSubmitted",
+   "default": "Draft",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "approval_section",
+   "fieldtype": "Section Break",
+   "label": "Approval Details",
+   "insert_after": "status"
+  },
+  {
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "label": "Approval Status",
+   "options": "Pending",
+   "default": "Pending",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approval_date",
+   "fieldtype": "Datetime",
+   "label": "Approval Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approval_comments",
+   "fieldtype": "Small Text",
+   "label": "Approval Comments"
+  },
+  {
+   "fieldname": "timesheet_details",
+   "fieldtype": "Section Break",
+   "label": "Timesheet Details",
+   "insert_after": "approval_comments"
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Project",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "insert_after": "timesheet_details"
+  },
+  {
+   "fieldname": "task",
+   "fieldtype": "Link",
+   "label": "Task",
+   "options": "Task",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "insert_after": "project"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "insert_after": "task"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "label": "Start Time",
+   "reqd": 1,
+   "in_list_view": 1,
+   "insert_after": "start_date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "insert_after": "start_time"
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "label": "End Time",
+   "reqd": 1,
+   "in_list_view": 1,
+   "insert_after": "end_date"
+  },
+  {
+   "fieldname": "time_logs",
+   "fieldtype": "Table",
+   "label": "Time Logs",
+   "options": "Custom Timesheet Detail",
+   "insert_after": "end_time"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Custom Timesheet",
+   "read_only": 1,
+   "print_hide": 1,
+   "no_copy": 1,
+   "insert_after": "time_logs"
+  }
+ ],
+ "has_web_view": 0,
+ "hide_links_on_list": 0,
+ "hide_toolbar": 0,
+ "idx": 0,
+ "image_view": 0,
+ "in_create": 0,
+ "is_submittable": 1,
+ "is_table": 0,
+ "is_tree": 0,
+ "is_virtual": 0,
+ "istable": 0,
+ "links": [],
+ "modified": "2025-10-03 11:58:45.418386",
+ "modified_by": "Administrator",
+ "module": "Gnapi Customizations",
+ "name": "Custom Timesheet",
+ "naming_rule": "",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "cancel": 0,
+   "delete": 1,
+   "amend": 0,
+   "report": 1,
+   "export": 1,
+   "import": 0,
+   "share": 1,
+   "print": 1,
+   "email": 1,
+   "if_owner": 0,
+   "select": 0
+  },
+  {
+   "role": "Employee",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "cancel": 0,
+   "delete": 0,
+   "amend": 0,
+   "report": 1,
+   "export": 1,
+   "import": 0,
+   "share": 1,
+   "print": 1,
+   "email": 1,
+   "if_owner": 1,
+   "select": 0
+  }
+ ],
+ "quick_entry": 0,
+ "read_only": 0,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "title": "Draft",
+   "color": "red"
+  },
+  {
+   "title": "Submitted",
+   "color": "orange"
+  },
+  {
+   "title": "Approved",
+   "color": "green"
+  }
+ ],
+ "track_changes": 1,
+ "track_seen": 0
+}
