@@ -138,17 +138,17 @@ function addMyApprovalsButton() {
 	}, 1000);
 	
 	// Also try when DOM changes (for SPA navigation)
-	const observer = new MutationObserver(() => {
-		if (window.location.pathname === '/app/custom-timesheet' && 
-			!document.getElementById('my-approvals-btn')) {
-			addMyApprovalsButton();
-		}
-	});
+	// const observer = new MutationObserver(() => {
+	// 	if (window.location.pathname === '/app/custom-timesheet' && 
+	// 		!document.getElementById('my-approvals-btn')) {
+	// 		addMyApprovalsButton();
+	// 	}
+	// });
 	
-	observer.observe(document.body, {
-		childList: true,
-		subtree: true
-	});
+	// observer.observe(document.body, {
+	// 	childList: true,
+	// 	subtree: true
+	// });
 }
 
 	// Function to handle DOM changes and re-hide timesheet elements
@@ -177,7 +177,7 @@ function addMyApprovalsButton() {
 	// Rename visible labels: 'Custom Timesheet' → 'Timesheet'
 	
 	// Add My Approvals button to Custom Timesheet page
-	addMyApprovalsButton();
+	// addMyApprovalsButton();
 
 	function renameCustomTimesheetLabels() {
 		// Page title on List view
