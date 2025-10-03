@@ -1,111 +1,115 @@
-frappe.ui.form.on('Customer', {
-    refresh: function(frm) {
-        // Create custom multi-select for timesheet approvers
-        setup_approver_multiselect(frm, 'timesheet_approver', 'User');
-    }
+frappe.ui.form.on("Customer", {
+	refresh: function (frm) {
+		setupApproverMultiselect(frm, "timesheet_approver", "User");
+	},
 });
 
-function setup_approver_multiselect(frm, fieldname, doctype) {
-    const field = frm.get_field(fieldname);
-    if (!field) return;
-    
-    // Check if button already exists to prevent duplicates
-    if (field.$input.siblings('.approver-select-btn').length > 0) {
-        return;
-    }
-    
-    // Hide the default input
-    field.$input.hide();
-    
-    // Create custom multi-select button with unique class
-    const $btn = $(`<button class="btn btn-default btn-sm approver-select-btn" style="margin-top: 5px;">
+function setupApproverMultiselect(frm, fieldname, doctype) {
+	const field = frm.get_field(fieldname);
+	if (!field) return;
+
+	if (field.$input.siblings(".approver-select-btn").length > 0) return;
+
+	// Hide default input
+	if (field.$input.is(":visible")) field.$input.hide();
+
+	// Add custom button
+	const $btn =
+		$(`<button class="btn btn-default btn-sm approver-select-btn" style="margin-top: 5px;">
         <i class="fa fa-users"></i> Select Approvers
     </button>`);
-    
-    field.$input.after($btn);
-    
-    $btn.on('click', function() {
-        // Get all users
-        frappe.call({
-            method: 'frappe.client.get_list',
-            args: {
-                doctype: doctype,
-                fields: ['name', 'full_name'],
-                filters: {
-                    enabled: 1
-                },
-                limit_page_length: 0
-            },
-            callback: function(r) {
-                if (r.message) {
-                    show_multiselect_dialog(frm, fieldname, r.message);
-                }
-            }
-        });
-    });
-    
-    // Display selected users
-    update_display(frm, fieldname);
+	field.$input.after($btn);
+
+	$btn.on("click", function () {
+		frappe.call({
+			method: "frappe.client.get_list",
+			args: {
+				doctype: doctype,
+				fields: ["name", "full_name"],
+				filters: { enabled: 1 },
+				limit_page_length: 0,
+			},
+			callback: function (r) {
+				if (r.message) showMultiselectDialog(frm, fieldname, r.message);
+			},
+		});
+	});
+
+	updateDisplay(frm, fieldname);
 }
 
-function show_multiselect_dialog(frm, fieldname, users) {
-    const current_value = frm.doc[fieldname] || '';
-    const selected_users = current_value ? current_value.split(',').map(u => u.trim()) : [];
-    
-    const d = new frappe.ui.Dialog({
-        title: 'Select Timesheet Approvers',
-        fields: [
-            {
-                fieldtype: 'HTML',
-                fieldname: 'user_list',
-                options: users.map(user => `
-                    <div class="checkbox">
+function showMultiselectDialog(frm, fieldname, users) {
+	const current_value = frm.doc[fieldname] || "";
+	const selected_users = current_value
+		.split(",")
+		.map((u) => u.trim())
+		.filter((u) => u);
+
+	const d = new frappe.ui.Dialog({
+		title: "Select Timesheet Approvers",
+		fields: [
+			{
+				fieldtype: "HTML",
+				fieldname: "user_list",
+				options: users
+					.map((u) => {
+						const name = frappe.utils.escape_html(u.name);
+						const full_name = frappe.utils.escape_html(u.full_name || u.name);
+						const checked = selected_users.includes(u.name) ? "checked" : "";
+						return `<div class="checkbox">
                         <label>
-                            <input type="checkbox" value="${user.name}" 
-                                   ${selected_users.includes(user.name) ? 'checked' : ''}>
-                            ${user.full_name || user.name} (${user.name})
+                            <input type="checkbox" value="${name}" ${checked}>
+                            ${full_name} (${name})
                         </label>
-                    </div>
-                `).join('')
-            }
-        ],
-        primary_action_label: 'Update',
-        primary_action: function() {
-            const selected = [];
-            d.$wrapper.find('input[type="checkbox"]:checked').each(function() {
-                selected.push($(this).val());
-            });
-            
-            frm.set_value(fieldname, selected.join(', '));
-            update_display(frm, fieldname);
-            d.hide();
-        }
-    });
-    
-    d.show();
+                    </div>`;
+					})
+					.join(""),
+			},
+		],
+		primary_action_label: "Update",
+		primary_action: function () {
+			const selected = [];
+			d.$wrapper.find('input[type="checkbox"]:checked').each(function () {
+				selected.push($(this).val());
+			});
+
+			frm.set_value(fieldname, selected.join(", "));
+			updateDisplay(frm, fieldname);
+			d.hide();
+		},
+	});
+
+	d.show();
 }
 
-function update_display(frm, fieldname) {
-    const field = frm.get_field(fieldname);
-    const value = frm.doc[fieldname] || '';
-    
-    // Remove any existing display
-    $(`#${fieldname}_display`).remove();
-    
-    if (value && value.trim()) {
-        const users = value.split(',').map(u => u.trim()).filter(u => u); // Filter out empty strings
-        if (users.length > 0) {
-            const display = `<div class="text-muted small" id="${fieldname}_display" style="margin-top: 5px;">
+function updateDisplay(frm, fieldname) {
+	const field = frm.get_field(fieldname);
+	if (!field) return;
+
+	$(`#${fieldname}_display`).remove();
+	const value = frm.doc[fieldname] || "";
+	const $btn = field.$input.siblings(".approver-select-btn");
+
+	if (value.trim()) {
+		const users = value
+			.split(",")
+			.map((u) => u.trim())
+			.filter((u) => u);
+		if (users.length) {
+			const display =
+				$(`<div class="text-muted small" id="${fieldname}_display" style="margin-top:5px;">
                 <strong>Selected:</strong> ${users.length} user(s)<br>
-                <span style="font-size: 11px;">${users.join(', ')}</span>
-            </div>`;
-            field.$input.siblings('.approver-select-btn').after(display);
-        }
-    } else {
-        // Show message when no users are selected
-        const display = `<div class="text-muted small" id="${fieldname}_display" style="margin-top: 5px;">
-            <em>No approvers selected</em>
-        </div>`;
-        field.$input.siblings('.approver-select-btn').after(display);
-    }
+                <span style="font-size:11px;">${users.join(", ")}</span>
+            </div>`);
+			$btn.after(display);
+			return;
+		}
+	}
+
+	// No users selected
+	const display =
+		$(`<div class="text-muted small" id="${fieldname}_display" style="margin-top:5px;">
+        <em>No approvers selected</em>
+    </div>`);
+	$btn.after(display);
 }

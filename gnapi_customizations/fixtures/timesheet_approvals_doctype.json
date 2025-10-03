@@ -8,10 +8,8 @@
     "istable": 0,
     "issingle": 0,
     "is_tree": 0,
-    "is_virtual": 0,
     "editable_grid": 1,
     "track_changes": 1,
-    "track_seen": 0,
     "max_attachments": 0,
     "show_name_in_global_search": 0,
     "allow_rename": 1,
@@ -25,15 +23,9 @@
     "show_title_field_in_link": 0,
     "quick_entry": 0,
     "default_view": "List",
-    "force_re_route_to_default_view": 0,
-    "show_preview_popup": 0,
-    "index_web_pages_for_search": 1,
-    "row_format": "Dynamic",
     "description": "Timesheet approval workflow for project approvers",
     "fields": [
       {
-        "doctype": "DocField",
-        "name": "timesheet",
         "fieldname": "timesheet",
         "fieldtype": "Link",
         "label": "Timesheet",
@@ -41,11 +33,10 @@
         "reqd": 1,
         "in_list_view": 1,
         "in_standard_filter": 1,
-        "search_index": 1
+        "search_index": 1,
+        "name": "timesheet"
       },
       {
-        "doctype": "DocField",
-        "name": "employee",
         "fieldname": "employee",
         "fieldtype": "Link",
         "label": "Employee",
@@ -53,11 +44,10 @@
         "reqd": 1,
         "in_list_view": 1,
         "in_standard_filter": 1,
-        "search_index": 1
+        "search_index": 1,
+        "name": "employee"
       },
       {
-        "doctype": "DocField",
-        "name": "project",
         "fieldname": "project",
         "fieldtype": "Link",
         "label": "Project",
@@ -65,11 +55,10 @@
         "reqd": 1,
         "in_list_view": 1,
         "in_standard_filter": 1,
-        "search_index": 1
+        "search_index": 1,
+        "name": "project"
       },
       {
-        "doctype": "DocField",
-        "name": "approval_status",
         "fieldname": "approval_status",
         "fieldtype": "Select",
         "label": "Approval Status",
@@ -78,11 +67,10 @@
         "reqd": 1,
         "in_list_view": 1,
         "in_standard_filter": 1,
-        "search_index": 1
+        "search_index": 1,
+        "name": "approval_status"
       },
       {
-        "doctype": "DocField",
-        "name": "approver",
         "fieldname": "approver",
         "fieldtype": "Link",
         "label": "Approver",
@@ -90,49 +78,45 @@
         "reqd": 1,
         "in_list_view": 1,
         "in_standard_filter": 1,
-        "search_index": 1
+        "search_index": 1,
+        "name": "approver"
       },
       {
-        "doctype": "DocField",
-        "name": "approval_date",
         "fieldname": "approval_date",
         "fieldtype": "Datetime",
         "label": "Approval Date",
         "in_list_view": 1,
-        "in_standard_filter": 1
+        "in_standard_filter": 1,
+        "read_only": 1,
+        "name": "approval_date"
       },
       {
-        "doctype": "DocField",
-        "name": "approval_comments",
         "fieldname": "approval_comments",
         "fieldtype": "Small Text",
         "label": "Approval Comments",
-        "in_list_view": 1
+        "in_list_view": 1,
+        "name": "approval_comments"
       },
       {
-        "doctype": "DocField",
-        "name": "total_hours",
         "fieldname": "total_hours",
         "fieldtype": "Float",
         "label": "Total Hours",
-        "precision": "2",
+        "precision": 2,
         "in_list_view": 1,
-        "read_only": 1
+        "read_only": 1,
+        "name": "total_hours"
       },
       {
-        "doctype": "DocField",
-        "name": "timesheet_date",
         "fieldname": "timesheet_date",
         "fieldtype": "Date",
         "label": "Timesheet Date",
         "in_list_view": 1,
-        "in_standard_filter": 1
+        "in_standard_filter": 1,
+        "name": "timesheet_date"
       }
     ],
     "permissions": [
       {
-        "doctype": "DocPerm",
-        "name": "timesheet_approval_system_manager",
         "role": "System Manager",
         "read": 1,
         "write": 1,
@@ -148,11 +132,10 @@
         "print": 1,
         "email": 1,
         "if_owner": 0,
-        "select": 0
+        "select": 0,
+        "name": "timesheet_approval_system_manager"
       },
       {
-        "doctype": "DocPerm",
-        "name": "timesheet_approval_employee",
         "role": "Employee",
         "read": 1,
         "write": 0,
@@ -168,22 +151,20 @@
         "print": 1,
         "email": 0,
         "if_owner": 1,
-        "select": 0
+        "select": 0,
+        "name": "timesheet_approval_employee"
       }
     ],
     "states": [
       {
-        "doctype": "DocType State",
         "title": "Pending",
         "color": "orange"
       },
       {
-        "doctype": "DocType State",
         "title": "Approved",
         "color": "green"
       },
       {
-        "doctype": "DocType State",
         "title": "Rejected",
         "color": "red"
       }
