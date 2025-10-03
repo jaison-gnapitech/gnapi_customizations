@@ -104,9 +104,52 @@
 			timesheetElement.addEventListener("click", function (event) {
 				event.preventDefault(); 
 				window.location.href = "/app/custom-timesheet"; 
-			});
-		}
+		});
 	}
+}
+
+function addMyApprovalsButton() {
+	// Wait for page to load and check if we're on Custom Timesheet list
+	setTimeout(() => {
+		if (window.location.pathname === '/app/custom-timesheet' || 
+			window.location.hash === '#List/Custom Timesheet' ||
+			document.querySelector('[data-doctype="Custom Timesheet"]')) {
+			
+			// Try multiple selectors to find the right place to add button
+			const toolbar = document.querySelector('.list-toolbar') || 
+						   document.querySelector('.page-head .container') ||
+						   document.querySelector('.page-actions');
+			
+			if (toolbar && !document.getElementById('my-approvals-btn')) {
+				const myApprovalsBtn = document.createElement('button');
+				myApprovalsBtn.id = 'my-approvals-btn';
+				myApprovalsBtn.className = 'btn btn-primary btn-sm';
+				myApprovalsBtn.innerHTML = '<i class="fa fa-check-circle"></i> My Approvals';
+				myApprovalsBtn.style.marginLeft = '10px';
+				
+				myApprovalsBtn.onclick = function() {
+					window.location.href = '/app/timesheet-approval';
+				};
+				
+				toolbar.appendChild(myApprovalsBtn);
+				console.log('My Approvals button added successfully');
+			}
+		}
+	}, 1000);
+	
+	// Also try when DOM changes (for SPA navigation)
+	const observer = new MutationObserver(() => {
+		if (window.location.pathname === '/app/custom-timesheet' && 
+			!document.getElementById('my-approvals-btn')) {
+			addMyApprovalsButton();
+		}
+	});
+	
+	observer.observe(document.body, {
+		childList: true,
+		subtree: true
+	});
+}
 
 	// Function to handle DOM changes and re-hide timesheet elements
 	function handleTimesheetElements() {
@@ -132,6 +175,9 @@
 	}
 
 	// Rename visible labels: 'Custom Timesheet' → 'Timesheet'
+	
+	// Add My Approvals button to Custom Timesheet page
+	addMyApprovalsButton();
 
 	function renameCustomTimesheetLabels() {
 		// Page title on List view

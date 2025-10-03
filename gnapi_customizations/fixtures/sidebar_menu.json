@@ -1,0 +1,10 @@
+[
+  {
+    "doctype": "Website Route",
+    "name": "my-approvals",
+    "page_or_generator": "Page",
+    "ref_doctype": "Timesheet Approval",
+    "doc_view": "List",
+    "page_name": "my-approvals"
+  }
+]

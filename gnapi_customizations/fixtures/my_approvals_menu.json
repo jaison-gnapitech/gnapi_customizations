@@ -1,0 +1,21 @@
+[
+  {
+    "doctype": "Desktop Icon",
+    "name": "My Approvals",
+    "module_name": "Gnapi Customizations",
+    "label": "My Approvals",
+    "standard": 1,
+    "custom": 1,
+    "app": "gnapi_customizations",
+    "doc_view": "List",
+    "link_to": "Timesheet Approval",
+    "color": "#FF6B6B",
+    "icon": "fa fa-check-circle",
+    "blocked": 0,
+    "force_show": 1,
+    "type": "DocType",
+    "hidden": 0,
+    "public": 0,
+    "owner": "Administrator"
+  }
+]
