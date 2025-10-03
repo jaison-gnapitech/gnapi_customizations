@@ -1,163 +1,233 @@
 (function () {
 	"use strict";
 
-	console.log("[gnapi] timesheet_override_direct.js loaded");
+	// Debug harness removed - it was interfering with Frappe's internal calls
 
-	function isSetupWizard() {
-		const path = window.location.pathname || "";
-		const inWizard = path.includes("setup-wizard") || path.includes("install");
-		console.log("[gnapi] isSetupWizard:", inWizard, "path:", path);
-		return inWizard;
-	}
-
+	// Wait for Frappe to be available before overriding
 	function waitForFrappe() {
-		// Never run any overrides during setup wizard
-		if (isSetupWizard()) return;
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", waitForFrappe);
+			return;
+		}
+
 		if (typeof frappe !== "undefined" && frappe.set_route) {
-			console.log("[gnapi] frappe available; applying overrides");
 			overrideSetRoute();
-			redirectToCustomTimesheet();
+			redirectToCustomTimesheet(); // Perform the redirect check when Frappe is ready
 		} else {
-			console.log("[gnapi] frappe not ready; retrying...");
 			setTimeout(waitForFrappe, 100);
 		}
 	}
 
+	// Redirect function to handle navigation to /app/timesheet
 	function redirectToCustomTimesheet() {
-		// Only redirect if we're specifically on the timesheet list page, not during setup
-		if (window.location.pathname === "/app/timesheet" && 
-			!window.location.pathname.includes("setup-wizard") &&
-			!window.location.pathname.includes("install")) {
-			console.log("[gnapi] redirecting to Custom Timesheet list");
-			frappe.set_route(["List", "Custom Timesheet"]);
+		const currentRoute = window.location.pathname;
+		// If the user navigates to `/app/timesheet`, redirect to `/app/custom-timesheet`
+		if (currentRoute === "/app/timesheet") {
+			window.location.href = "/app/custom-timesheet"; // Directly change the URL
 		}
 	}
 
+	// Override frappe.set_route to safely handle routes
 	function overrideSetRoute() {
 		if (frappe._safeRouteOverridden) return;
 		frappe._safeRouteOverridden = true;
 
 		const originalSetRoute = frappe.set_route;
-		frappe.set_route = function (route, name, filters) {
+
+		frappe.set_route = function (doctype, name, filters) {
 			try {
-				// Don't interfere with setup wizard or installation routes
-				if (window.location.pathname.includes("setup-wizard") || 
-					window.location.pathname.includes("install")) {
-					console.log("[gnapi] bypass override on setup/install; route:", route, name, filters);
-					return originalSetRoute.apply(this, arguments);
+				// If the route is 'timesheet', change it to 'Custom Timesheet'
+				if (
+					(Array.isArray(doctype) &&
+						doctype[1] &&
+						doctype[1].toLowerCase() === "timesheet") ||
+					(typeof doctype === "string" && doctype.toLowerCase() === "timesheet")
+				) {
+					doctype = "Custom Timesheet"; // Change 'timesheet' to 'Custom Timesheet'
 				}
-				
-				if (Array.isArray(route)) {
-					if (route[1] && route[1].toLowerCase() === "timesheet") {
-						console.log("[gnapi] overriding array route target from Timesheet -> Custom Timesheet", route);
-						route[1] = "Custom Timesheet";
-					}
-					// When route is an array, call with a single argument to avoid appending 'undefined'
-					console.log("[gnapi] calling originalSetRoute with array:", route);
-					return originalSetRoute.call(this, route);
-				} else if (typeof route === "string" && route.toLowerCase() === "timesheet") {
-					console.log("[gnapi] overriding string route 'Timesheet' -> Custom Timesheet");
-					route = ["List", "Custom Timesheet"];
-					console.log("[gnapi] calling originalSetRoute with array:", route);
-					return originalSetRoute.call(this, route);
+
+				// Handle name (e.g., if 'timesheet' is used, convert to 'Custom Timesheet')
+				if (name && name.toLowerCase() === "timesheet") {
+					name = "Custom Timesheet";
 				}
-				// For non-array routes, pass only defined args to avoid '/undefined' in URL
-				const args = [];
-				if (typeof route !== "undefined") args.push(route);
-				if (typeof name !== "undefined") args.push(name);
-				if (typeof filters !== "undefined") args.push(filters);
-				console.log("[gnapi] forwarding route call:", args);
-				return originalSetRoute.apply(this, args);
+
+				// Concatenate doctype, name, and filters ensuring empty strings come last and no trailing slash
+				const route = [doctype, name, filters]
+					.filter(Boolean) // Remove any falsy values (like empty strings)
+					.join("/"); // Join parts with "/"
+
+				// Ensure there is no trailing slash
+				const finalRoute = route.replace(/\/$/, "");
+
+				// If the route is still pointing to 'timesheet', redirect directly
+				if (finalRoute === "timesheet") {
+					window.location.href = "/app/custom-timesheet"; // Directly change the URL
+				} else {
+					return originalSetRoute.apply(this, [finalRoute]);
+				}
 			} catch (err) {
 				console.error(err);
 			}
 		};
 	}
 
+	// Function to hide Timesheet widgets and buttons
 	function hideTimesheetElements() {
-		document
-			.querySelectorAll('a[href*="/app/timesheet"], a[data-link*="/app/timesheet"]')
-			.forEach((el) => (el.style.display = "none"));
-		document.querySelectorAll(".sidebar-menu a").forEach((el) => {
-			if ((el.textContent || "").trim().toLowerCase() === "timesheet")
-				el.style.display = "none";
+		// Hide Timesheet widget with data-doctype and aria-label
+		const timesheetWidget = document.querySelector(
+			'[aria-label="Timesheet"][data-widget-name="n8u94b92s8"]'
+		);
+		if (timesheetWidget) {
+			timesheetWidget.style.display = "none";
+		}
+
+		// Hide any other Timesheet buttons or links
+		const timesheetButtons = document.querySelectorAll(
+			'a[href*="/app/timesheet"], a[data-link*="/app/timesheet"]'
+		);
+		timesheetButtons.forEach((button) => {
+			button.style.display = "none";
 		});
-		document
-			.querySelectorAll('[aria-label="Timesheet"]')
-			.forEach((el) => (el.style.display = "none"));
+
+		// Hide sidebar menu items with Timesheet text
+		const sidebarItems = document.querySelectorAll(".sidebar-menu a");
+		sidebarItems.forEach((item) => {
+			if (item.textContent.trim().toLowerCase() === "timesheet") {
+				item.style.display = "none";
+			}
+		});
+
+		const timesheetElement = document.querySelector('[data-id="RsafDhm1MS"]');
+		if (timesheetElement) {
+			timesheetElement.setAttribute("href", "/app/custom-timesheet");
+			timesheetElement.style.pointerEvents = "auto"; 
+			timesheetElement.addEventListener("click", function (event) {
+				event.preventDefault(); 
+				window.location.href = "/app/custom-timesheet"; 
+		});
 	}
+}
+
+function addMyApprovalsButton() {
+	// Wait for page to load and check if we're on Custom Timesheet list
+	setTimeout(() => {
+		if (window.location.pathname === '/app/custom-timesheet' || 
+			window.location.hash === '#List/Custom Timesheet' ||
+			document.querySelector('[data-doctype="Custom Timesheet"]')) {
+			
+			// Try multiple selectors to find the right place to add button
+			const toolbar = document.querySelector('.list-toolbar') || 
+						   document.querySelector('.page-head .container') ||
+						   document.querySelector('.page-actions');
+			
+			if (toolbar && !document.getElementById('my-approvals-btn')) {
+				const myApprovalsBtn = document.createElement('button');
+				myApprovalsBtn.id = 'my-approvals-btn';
+				myApprovalsBtn.className = 'btn btn-primary btn-sm';
+				myApprovalsBtn.innerHTML = '<i class="fa fa-check-circle"></i> My Approvals';
+				myApprovalsBtn.style.marginLeft = '10px';
+				
+				myApprovalsBtn.onclick = function() {
+					window.location.href = '/app/timesheet-approval';
+				};
+				
+				toolbar.appendChild(myApprovalsBtn);
+				console.log('My Approvals button added successfully');
+			}
+		}
+	}, 1000);
+	
+	// Also try when DOM changes (for SPA navigation)
+	const observer = new MutationObserver(() => {
+		if (window.location.pathname === '/app/custom-timesheet' && 
+			!document.getElementById('my-approvals-btn')) {
+			addMyApprovalsButton();
+		}
+	});
+	
+	observer.observe(document.body, {
+		childList: true,
+		subtree: true
+	});
+}
+
+	// Function to handle DOM changes and re-hide timesheet elements
+	function handleTimesheetElements() {
+		hideTimesheetElements();
+		renameCustomTimesheetLabels();
+
+		// Re-run on DOM changes (for SPA navigation)
+		const observer = new MutationObserver(function (mutations) {
+			mutations.forEach(function (mutation) {
+				if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+					setTimeout(() => {
+						hideTimesheetElements();
+						renameCustomTimesheetLabels();
+					}, 100);
+				}
+			});
+		});
+
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true,
+		});
+	}
+
+	// Rename visible labels: 'Custom Timesheet' → 'Timesheet'
+	
+	// Add My Approvals button to Custom Timesheet page
+	addMyApprovalsButton();
 
 	function renameCustomTimesheetLabels() {
-		document
-			.querySelectorAll(
-				"button, a, h1, h2, h3, .breadcrumb span, .breadcrumb a, .page-title"
-			)
-			.forEach((el) => {
-				if (!el.textContent) return;
-				el.textContent = el.textContent.replace(/custom\s+timesheet/gi, "Timesheet");
-			});
-		if (document.title) {
-			document.title = document.title.replace(/custom\s+timesheet/gi, "Timesheet");
-		}
-	}
-
-	function addMyApprovalsButton() {
-		setTimeout(() => {
-			if (
-				!document.getElementById("my-approvals-btn") &&
-				(window.location.pathname === "/app/custom-timesheet" ||
-					document.querySelector('[data-doctype="Custom Timesheet"]'))
-			) {
-				const toolbar = document.querySelector(
-					".list-toolbar, .page-actions, .page-head .container"
-				);
-				if (toolbar) {
-					const btn = document.createElement("button");
-					btn.id = "my-approvals-btn";
-					btn.className = "btn btn-primary btn-sm";
-					btn.innerHTML = '<i class="fa fa-check-circle"></i> My Approvals';
-					btn.style.marginLeft = "10px";
-					btn.onclick = () => frappe.set_route(["List", "Timesheet Approval"]);
-					toolbar.appendChild(btn);
-				}
+		// Page title on List view
+		const titleEl = document.querySelector('.page-title .ellipsis, .page-title');
+		if (titleEl && /custom\s+timesheet/i.test(titleEl.textContent || '')) {
+			titleEl.textContent = (titleEl.textContent || '').replace(/custom\s+timesheet/ig, 'Timesheet');
+			if (document.title) {
+				document.title = document.title.replace(/custom\s+timesheet/ig, 'Timesheet');
 			}
-		}, 500);
-	}
-
-	function initObservers() {
-		if (isSetupWizard()) {
-			console.log("[gnapi] skip observers during setup wizard");
-			return;
 		}
-		const observer = new MutationObserver(() => {
-			if (isSetupWizard()) return;
-			hideTimesheetElements();
-			renameCustomTimesheetLabels();
-			addMyApprovalsButton();
+
+		// Buttons and links (handle "New Custom Timesheet", "Add Custom Timesheet", etc.)
+		document.querySelectorAll('button, a').forEach(function(el){
+			const txt = (el.textContent || '').trim();
+			if (!txt) return;
+			if (/^(new|add)\s+custom\s+timesheet$/i.test(txt)) {
+				el.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
+			} else if (/custom\s+timesheet/i.test(txt)) {
+				el.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
+			}
 		});
-		console.log("[gnapi] observers attached");
-		observer.observe(document.body, { childList: true, subtree: true });
+
+		// Sidebar/menu items
+		document.querySelectorAll('.sidebar-menu a, .dropdown-menu a, a[data-link], a[href]').forEach(function(link){
+			const txt = (link.textContent || '').trim();
+			if (txt && /custom\s+timesheet/i.test(txt)) {
+				link.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
+			}
+		});
+
+		// Form title and breadcrumbs
+		document.querySelectorAll('.breadcrumb a, .breadcrumb span, h1, h2, h3').forEach(function(el){
+			const txt = (el.textContent || '').trim();
+			if (txt && /custom\s+timesheet/i.test(txt)) {
+				el.textContent = txt.replace(/custom\s+timesheet/ig, 'Timesheet');
+			}
+		});
 	}
 
-	if (!isSetupWizard()) {
-		waitForFrappe();
+	// Initialize override when Frappe is ready and perform the redirect check
+	waitForFrappe();
+
+	// Start hiding Timesheet elements and renaming labels
+	setTimeout(handleTimesheetElements, 1000);
+
+	// Observe route changes manually
+	$(document).on('page-change route-change', function() {
 		setTimeout(() => {
-			hideTimesheetElements();
 			renameCustomTimesheetLabels();
-			addMyApprovalsButton();
-		}, 1000);
-		initObservers();
-
-		if (typeof $ !== "undefined" && $.fn && $(document)) {
-			$(document).on("page-change route-change", () => {
-				console.log("[gnapi] route/page change detected");
-				setTimeout(() => {
-					if (isSetupWizard()) return;
-					hideTimesheetElements();
-					renameCustomTimesheetLabels();
-					addMyApprovalsButton();
-				}, 300);
-			});
-		}
-	}
+			hideTimesheetElements();
+		}, 300);
+	});
 })();
