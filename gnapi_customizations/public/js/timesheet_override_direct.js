@@ -1,18 +1,24 @@
 (function () {
 	"use strict";
 
+	console.log("[gnapi] timesheet_override_direct.js loaded");
+
 	function isSetupWizard() {
 		const path = window.location.pathname || "";
-		return path.includes("setup-wizard") || path.includes("install");
+		const inWizard = path.includes("setup-wizard") || path.includes("install");
+		console.log("[gnapi] isSetupWizard:", inWizard, "path:", path);
+		return inWizard;
 	}
 
 	function waitForFrappe() {
 		// Never run any overrides during setup wizard
 		if (isSetupWizard()) return;
 		if (typeof frappe !== "undefined" && frappe.set_route) {
+			console.log("[gnapi] frappe available; applying overrides");
 			overrideSetRoute();
 			redirectToCustomTimesheet();
 		} else {
+			console.log("[gnapi] frappe not ready; retrying...");
 			setTimeout(waitForFrappe, 100);
 		}
 	}
@@ -22,6 +28,7 @@
 		if (window.location.pathname === "/app/timesheet" && 
 			!window.location.pathname.includes("setup-wizard") &&
 			!window.location.pathname.includes("install")) {
+			console.log("[gnapi] redirecting to Custom Timesheet list");
 			frappe.set_route(["List", "Custom Timesheet"]);
 		}
 	}
@@ -36,17 +43,22 @@
 				// Don't interfere with setup wizard or installation routes
 				if (window.location.pathname.includes("setup-wizard") || 
 					window.location.pathname.includes("install")) {
+					console.log("[gnapi] bypass override on setup/install; route:", route, name, filters);
 					return originalSetRoute.apply(this, arguments);
 				}
 				
 				if (Array.isArray(route)) {
 					if (route[1] && route[1].toLowerCase() === "timesheet") {
+						console.log("[gnapi] overriding array route target from Timesheet -> Custom Timesheet", route);
 						route[1] = "Custom Timesheet";
 					}
 					// When route is an array, call with a single argument to avoid appending 'undefined'
+					console.log("[gnapi] calling originalSetRoute with array:", route);
 					return originalSetRoute.call(this, route);
 				} else if (typeof route === "string" && route.toLowerCase() === "timesheet") {
+					console.log("[gnapi] overriding string route 'Timesheet' -> Custom Timesheet");
 					route = ["List", "Custom Timesheet"];
+					console.log("[gnapi] calling originalSetRoute with array:", route);
 					return originalSetRoute.call(this, route);
 				}
 				// For non-array routes, pass only defined args to avoid '/undefined' in URL
@@ -54,6 +66,7 @@
 				if (typeof route !== "undefined") args.push(route);
 				if (typeof name !== "undefined") args.push(name);
 				if (typeof filters !== "undefined") args.push(filters);
+				console.log("[gnapi] forwarding route call:", args);
 				return originalSetRoute.apply(this, args);
 			} catch (err) {
 				console.error(err);
@@ -112,12 +125,16 @@
 	}
 
 	function initObservers() {
-		if (isSetupWizard()) return;
+		if (isSetupWizard()) {
+			console.log("[gnapi] skip observers during setup wizard");
+			return;
+		}
 		const observer = new MutationObserver(() => {
 			hideTimesheetElements();
 			renameCustomTimesheetLabels();
 			addMyApprovalsButton();
 		});
+		console.log("[gnapi] observers attached");
 		observer.observe(document.body, { childList: true, subtree: true });
 	}
 
@@ -132,6 +149,7 @@
 
 		if (typeof $ !== "undefined" && $.fn && $(document)) {
 			$(document).on("page-change route-change", () => {
+				console.log("[gnapi] route/page change detected");
 				setTimeout(() => {
 					hideTimesheetElements();
 					renameCustomTimesheetLabels();
