@@ -1,7 +1,14 @@
 (function () {
 	"use strict";
 
+	function isSetupWizard() {
+		const path = window.location.pathname || "";
+		return path.includes("setup-wizard") || path.includes("install");
+	}
+
 	function waitForFrappe() {
+		// Never run any overrides during setup wizard
+		if (isSetupWizard()) return;
 		if (typeof frappe !== "undefined" && frappe.set_route) {
 			overrideSetRoute();
 			redirectToCustomTimesheet();
@@ -105,6 +112,7 @@
 	}
 
 	function initObservers() {
+		if (isSetupWizard()) return;
 		const observer = new MutationObserver(() => {
 			hideTimesheetElements();
 			renameCustomTimesheetLabels();
@@ -113,19 +121,23 @@
 		observer.observe(document.body, { childList: true, subtree: true });
 	}
 
-	waitForFrappe();
-	setTimeout(() => {
-		hideTimesheetElements();
-		renameCustomTimesheetLabels();
-		addMyApprovalsButton();
-	}, 1000);
-	initObservers();
-
-	$(document).on("page-change route-change", () => {
+	if (!isSetupWizard()) {
+		waitForFrappe();
 		setTimeout(() => {
 			hideTimesheetElements();
 			renameCustomTimesheetLabels();
 			addMyApprovalsButton();
-		}, 300);
-	});
+		}, 1000);
+		initObservers();
+
+		if (typeof $ !== "undefined" && $.fn && $(document)) {
+			$(document).on("page-change route-change", () => {
+				setTimeout(() => {
+					hideTimesheetElements();
+					renameCustomTimesheetLabels();
+					addMyApprovalsButton();
+				}, 300);
+			});
+		}
+	}
 })();
