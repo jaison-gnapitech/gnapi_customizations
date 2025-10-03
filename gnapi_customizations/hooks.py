@@ -57,8 +57,10 @@ doctype_js = {
     "Project": "public/js/project_timesheet_approvers.js",
     "Customer": "public/js/customer_timesheet_approvers.js"
 }
-# Keep list view JavaScript disabled for now
-# doctype_list_js = {"Custom Timesheet" : "public/js/custom_timesheet_list_simple.js"}
+
+doctype_list_js = {
+    "Timesheet Approval": "public/js/my_approvals_page.js"
+}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -154,7 +156,8 @@ doctype_js = {
 doc_events = {
     "Custom Timesheet": {
         "validate": "gnapi_customizations.customizations.custom_timesheet_events.on_custom_timesheet_validate",
-        "before_save": "gnapi_customizations.customizations.custom_timesheet_events.on_custom_timesheet_before_save"
+        "before_save": "gnapi_customizations.customizations.custom_timesheet_events.on_custom_timesheet_before_save",
+        "after_submit": "gnapi_customizations.customizations.custom_timesheet_events.on_custom_timesheet_after_submit"
     },
     "Custom Timesheet Detail": {
         "before_save": "gnapi_customizations.customizations.custom_timesheet_events.on_custom_timesheet_detail_before_save"

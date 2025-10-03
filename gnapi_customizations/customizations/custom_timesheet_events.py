@@ -397,3 +397,11 @@ def debug_approver_access(user_email=None):
         result["timesheets_visible"] = timesheets
     
     return result
+
+def on_custom_timesheet_after_submit(doc: Document, method: str | None = None) -> None:
+    """Create approval records when timesheet is submitted"""
+    try:
+        from gnapi_customizations.customizations.timesheet_approval_events import create_approval_for_timesheet
+        create_approval_for_timesheet(doc.name)
+    except Exception as e:
+        frappe.log_error(f"Error creating approval for timesheet {doc.name}: {str(e)}")
