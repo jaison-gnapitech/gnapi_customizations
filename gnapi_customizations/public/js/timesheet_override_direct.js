@@ -1,6 +1,17 @@
 (function () {
 	"use strict";
 
+	// Hard exclude setup wizard and Custom Timesheet pages to prevent any interference
+	(function () {
+		var path = window.location.pathname || "";
+		var excluded = path.indexOf("setup-wizard") !== -1 ||
+			path.indexOf("install") !== -1 ||
+			path.indexOf("/app/custom-timesheet") === 0;
+		if (excluded) {
+			return; // Do nothing on these routes
+		}
+	})();
+
 	// Debug harness removed - it was interfering with Frappe's internal calls
 
 	// Wait for Frappe to be available before overriding
