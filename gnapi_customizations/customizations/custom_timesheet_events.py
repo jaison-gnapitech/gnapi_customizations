@@ -60,6 +60,25 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
     if meta.has_field("end_date") or meta.has_field("end_time"):
         if not getattr(doc, "end_date", None) or not getattr(doc, "end_time", None):
             frappe.throw("End Date and End Time are required")
+    
+    # Validate Custom Timesheet Detail child table
+    if hasattr(doc, 'time_logs') and doc.time_logs:
+        for i, row in enumerate(doc.time_logs, 1):
+            if not row.get('project'):
+                frappe.throw(f"Project is required in Time Log row {i}")
+            if not row.get('task'):
+                frappe.throw(f"Task is required in Time Log row {i}")
+            if not row.get('start_date_time'):
+                frappe.throw(f"Start Date Time is required in Time Log row {i}")
+            if not row.get('end_date_time'):
+                frappe.throw(f"End Date Time is required in Time Log row {i}")
+            
+            # Validate that end time is after start time
+            if row.get('start_date_time') and row.get('end_date_time'):
+                start_dt = get_datetime(row.start_date_time)
+                end_dt = get_datetime(row.end_date_time)
+                if end_dt <= start_dt:
+                    frappe.throw(f"End Date Time must be after Start Date Time in Time Log row {i}")
 
 def on_custom_timesheet_before_save(doc: Document, method: str | None = None) -> None:
     # Recalculate taken_hours for each time log row if both datetimes exist
