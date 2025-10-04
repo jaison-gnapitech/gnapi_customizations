@@ -5,10 +5,13 @@ frappe.ui.form.on("Custom Timesheet", {
 		addCustomAttachmentArea(frm);
 		restrictStatusForEmployee(frm);
 		addApprovalButtons(frm);
+		enhanceTimesheetDetailsTable(frm);
+		updateSaveButtonState(frm);
 	},
 
 	onload: function (frm) {
 		restrictStatusForEmployee(frm);
+		enhanceTimesheetDetailsTable(frm);
 	},
 
 	status: function (frm) {
@@ -18,6 +21,24 @@ frappe.ui.form.on("Custom Timesheet", {
 	before_save: function (frm) {
 		validateCustomTimesheetDetails(frm);
 	},
+
+	time_logs: {
+		refresh: function (frm, cdt, cdn) {
+			updateSaveButtonState(frm);
+		},
+		project: function (frm, cdt, cdn) {
+			updateSaveButtonState(frm);
+		},
+		task: function (frm, cdt, cdn) {
+			updateSaveButtonState(frm);
+		},
+		start_date_time: function (frm, cdt, cdn) {
+			updateSaveButtonState(frm);
+		},
+		end_date_time: function (frm, cdt, cdn) {
+			updateSaveButtonState(frm);
+		}
+	}
 });
 
 // ----------------------- EMPLOYEE STATUS RESTRICTIONS -----------------------
@@ -108,6 +129,282 @@ function validateCustomTimesheetDetails(frm) {
 				return;
 			}
 		}
+	}
+	
+	// Show success message if validation passes
+	frappe.show_alert({
+		message: __("✓ All timesheet entries are valid. Saving..."),
+		indicator: "green",
+	});
+}
+
+// ----------------------- TIMESHEET DETAILS TABLE ENHANCEMENTS -----------------------
+function enhanceTimesheetDetailsTable(frm) {
+	// Add custom CSS for better table styling
+	if (!document.getElementById("custom-timesheet-table-styles")) {
+		const style = document.createElement("style");
+		style.id = "custom-timesheet-table-styles";
+		style.textContent = `
+			.custom-timesheet-table-header {
+				background: #f8f9fa;
+				padding: 15px;
+				border: 1px solid #dee2e6;
+				border-radius: 8px 8px 0 0;
+				margin-bottom: 0;
+			}
+			.custom-timesheet-table-header h6 {
+				margin: 0;
+				color: #495057;
+				font-weight: 600;
+			}
+			.custom-timesheet-table-actions {
+				background: #f8f9fa;
+				padding: 10px 15px;
+				border: 1px solid #dee2e6;
+				border-top: none;
+				border-radius: 0 0 8px 8px;
+				text-align: right;
+			}
+			.custom-timesheet-table-actions .btn {
+				margin-left: 8px;
+			}
+			.custom-timesheet-validation-message {
+				background: #fff3cd;
+				border: 1px solid #ffeaa7;
+				border-radius: 4px;
+				padding: 10px;
+				margin: 10px 0;
+				color: #856404;
+				font-size: 14px;
+			}
+			.custom-timesheet-validation-message.error {
+				background: #f8d7da;
+				border-color: #f5c6cb;
+				color: #721c24;
+			}
+			.custom-timesheet-validation-message.success {
+				background: #d4edda;
+				border-color: #c3e6cb;
+				color: #155724;
+			}
+			.table-responsive {
+				border: 1px solid #dee2e6;
+				border-radius: 8px;
+				overflow: hidden;
+			}
+			.table th {
+				background: #f8f9fa;
+				font-weight: 600;
+				border-bottom: 2px solid #dee2e6;
+			}
+			.table td {
+				vertical-align: middle;
+			}
+			.required-field {
+				color: #dc3545;
+			}
+			.field-error {
+				border-color: #dc3545 !important;
+				box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+			}
+		`;
+		document.head.appendChild(style);
+	}
+
+	// Enhance the time_logs table
+	const timeLogsField = frm.fields_dict.time_logs;
+	if (timeLogsField && timeLogsField.$wrapper) {
+		enhanceTableWrapper(frm);
+		addTableHeader(frm);
+		addTableActions(frm);
+		updateValidationMessage(frm);
+	}
+}
+
+function enhanceTableWrapper(frm) {
+	const wrapper = frm.fields_dict.time_logs.$wrapper;
+	
+	// Add custom classes
+	wrapper.addClass("custom-timesheet-table-wrapper");
+	
+	// Wrap the table in a responsive container
+	const tableContainer = wrapper.find('.table-responsive');
+	if (tableContainer.length === 0) {
+		const table = wrapper.find('table');
+		if (table.length > 0) {
+			table.wrap('<div class="table-responsive"></div>');
+		}
+	}
+}
+
+function addTableHeader(frm) {
+	const wrapper = frm.fields_dict.time_logs.$wrapper;
+	
+	// Check if header already exists
+	if (wrapper.find('.custom-timesheet-table-header').length > 0) return;
+	
+	const header = $(`
+		<div class="custom-timesheet-table-header">
+			<h6><i class="fa fa-clock-o"></i> Custom Timesheet Details</h6>
+			<small class="text-muted">Add your work entries below. All fields are required.</small>
+		</div>
+	`);
+	
+	wrapper.prepend(header);
+}
+
+function addTableActions(frm) {
+	const wrapper = frm.fields_dict.time_logs.$wrapper;
+	
+	// Check if actions already exist
+	if (wrapper.find('.custom-timesheet-table-actions').length > 0) return;
+	
+	const actions = $(`
+		<div class="custom-timesheet-table-actions">
+			<button type="button" class="btn btn-sm btn-primary" id="add-timesheet-row">
+				<i class="fa fa-plus"></i> Add Entry
+			</button>
+			<button type="button" class="btn btn-sm btn-secondary" id="clear-all-rows" style="display: none;">
+				<i class="fa fa-trash"></i> Clear All
+			</button>
+		</div>
+	`);
+	
+	wrapper.append(actions);
+	
+	// Add event handlers
+	actions.find('#add-timesheet-row').on('click', function() {
+		addTimesheetRow(frm);
+	});
+	
+	actions.find('#clear-all-rows').on('click', function() {
+		clearAllRows(frm);
+	});
+}
+
+function addTimesheetRow(frm) {
+	// Add a new row to the time_logs table
+	frm.add_child('time_logs');
+	frm.refresh_field('time_logs');
+	
+	// Update UI state
+	updateSaveButtonState(frm);
+	updateValidationMessage(frm);
+	updateTableActions(frm);
+	
+	// Show success message
+	showValidationMessage(frm, "New timesheet entry added. Please fill in all required fields.", "info");
+}
+
+function clearAllRows(frm) {
+	frappe.confirm(
+		__("Are you sure you want to clear all timesheet entries?"),
+		function() {
+			frm.clear_table('time_logs');
+			frm.refresh_field('time_logs');
+			
+			// Update UI state
+			updateSaveButtonState(frm);
+			updateValidationMessage(frm);
+			updateTableActions(frm);
+			
+			showValidationMessage(frm, "All timesheet entries cleared.", "info");
+		}
+	);
+}
+
+function updateTableActions(frm) {
+	const wrapper = frm.fields_dict.time_logs.$wrapper;
+	const clearButton = wrapper.find('#clear-all-rows');
+	
+	if (frm.doc.time_logs && frm.doc.time_logs.length > 0) {
+		clearButton.show();
+	} else {
+		clearButton.hide();
+	}
+}
+
+function updateSaveButtonState(frm) {
+	const isValid = validateTimesheetDetails(frm);
+	const saveButton = frm.page.find('.btn-primary[data-label="Save"]');
+	
+	if (saveButton.length > 0) {
+		if (isValid) {
+			saveButton.prop('disabled', false).removeClass('btn-secondary').addClass('btn-primary');
+		} else {
+			saveButton.prop('disabled', true).removeClass('btn-primary').addClass('btn-secondary');
+		}
+	}
+	
+	updateTableActions(frm);
+}
+
+function validateTimesheetDetails(frm) {
+	// Check if time_logs table exists and has at least one row
+	if (!frm.doc.time_logs || frm.doc.time_logs.length === 0) {
+		return false;
+	}
+
+	// Validate each row in the time_logs table
+	for (let i = 0; i < frm.doc.time_logs.length; i++) {
+		const row = frm.doc.time_logs[i];
+		
+		// Check required fields
+		if (!row.project || !row.task || !row.start_date_time || !row.end_date_time) {
+			return false;
+		}
+
+		// Validate that end time is after start time
+		if (row.start_date_time && row.end_date_time) {
+			const startDate = new Date(row.start_date_time);
+			const endDate = new Date(row.end_date_time);
+			
+			if (endDate <= startDate) {
+				return false;
+			}
+		}
+	}
+	
+	return true;
+}
+
+function updateValidationMessage(frm) {
+	const wrapper = frm.fields_dict.time_logs.$wrapper;
+	
+	// Remove existing validation message
+	wrapper.find('.custom-timesheet-validation-message').remove();
+	
+	if (!frm.doc.time_logs || frm.doc.time_logs.length === 0) {
+		showValidationMessage(frm, "Please add at least one timesheet entry before saving.", "error");
+	} else {
+		const isValid = validateTimesheetDetails(frm);
+		if (isValid) {
+			showValidationMessage(frm, `✓ All ${frm.doc.time_logs.length} timesheet entries are valid and ready to save.`, "success");
+		} else {
+			showValidationMessage(frm, "Please fill in all required fields in your timesheet entries.", "error");
+		}
+	}
+}
+
+function showValidationMessage(frm, message, type = "info") {
+	const wrapper = frm.fields_dict.time_logs.$wrapper;
+	
+	// Remove existing validation message
+	wrapper.find('.custom-timesheet-validation-message').remove();
+	
+	const validationDiv = $(`
+		<div class="custom-timesheet-validation-message ${type}">
+			<i class="fa fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+			${message}
+		</div>
+	`);
+	
+	// Insert after the header
+	const header = wrapper.find('.custom-timesheet-table-header');
+	if (header.length > 0) {
+		header.after(validationDiv);
+	} else {
+		wrapper.prepend(validationDiv);
 	}
 }
 
