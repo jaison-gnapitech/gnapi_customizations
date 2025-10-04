@@ -7,6 +7,7 @@ frappe.ui.form.on("Custom Timesheet", {
 		addApprovalButtons(frm);
 		enhanceTimesheetDetailsTable(frm);
 		updateSaveButtonState(frm);
+		addDebugButton(frm);
 	},
 
 	onload: function (frm) {
@@ -296,6 +297,26 @@ function addTimesheetRow(frm) {
 	showValidationMessage(frm, "New timesheet entry added. Please fill in all required fields.", "info");
 }
 
+// Debug function to inspect row data
+function debugRowData(frm) {
+	if (!frm.doc.time_logs || frm.doc.time_logs.length === 0) {
+		console.log("No time_logs data found");
+		return;
+	}
+	
+	console.log("=== DEBUG: Time Logs Data ===");
+	frm.doc.time_logs.forEach((row, index) => {
+		console.log(`Row ${index + 1}:`, {
+			project: row.project,
+			task: row.task,
+			start_date_time: row.start_date_time,
+			end_date_time: row.end_date_time,
+			raw_row: row
+		});
+	});
+	console.log("=== END DEBUG ===");
+}
+
 function clearAllRows(frm) {
 	frappe.confirm(
 		__("Are you sure you want to clear all timesheet entries?"),
@@ -349,8 +370,19 @@ function validateTimesheetDetails(frm) {
 	for (let i = 0; i < frm.doc.time_logs.length; i++) {
 		const row = frm.doc.time_logs[i];
 		
-		// Check required fields
-		if (!row.project || !row.task || !row.start_date_time || !row.end_date_time) {
+		// Debug: Log the row data to see what's actually there
+		console.log(`Row ${i + 1} data:`, row);
+		
+		// Check required fields (including empty strings and whitespace)
+		if (!row.project || !String(row.project).trim() || 
+			!row.task || !String(row.task).trim() || 
+			!row.start_date_time || !row.end_date_time) {
+			console.log(`Row ${i + 1} missing fields:`, {
+				project: row.project,
+				task: row.task,
+				start_date_time: row.start_date_time,
+				end_date_time: row.end_date_time
+			});
 			return false;
 		}
 
@@ -360,6 +392,10 @@ function validateTimesheetDetails(frm) {
 			const endDate = new Date(row.end_date_time);
 			
 			if (endDate <= startDate) {
+				console.log(`Row ${i + 1} time validation failed:`, {
+					start: row.start_date_time,
+					end: row.end_date_time
+				});
 				return false;
 			}
 		}
@@ -377,13 +413,68 @@ function updateValidationMessage(frm) {
 	if (!frm.doc.time_logs || frm.doc.time_logs.length === 0) {
 		showValidationMessage(frm, "Please add at least one timesheet entry before saving.", "error");
 	} else {
-		const isValid = validateTimesheetDetails(frm);
-		if (isValid) {
+		const validationResult = getDetailedValidation(frm);
+		if (validationResult.isValid) {
 			showValidationMessage(frm, `✓ All ${frm.doc.time_logs.length} timesheet entries are valid and ready to save.`, "success");
 		} else {
-			showValidationMessage(frm, "Please fill in all required fields in your timesheet entries.", "error");
+			showValidationMessage(frm, validationResult.message, "error");
 		}
 	}
+}
+
+function getDetailedValidation(frm) {
+	// Check if time_logs table exists and has at least one row
+	if (!frm.doc.time_logs || frm.doc.time_logs.length === 0) {
+		return {
+			isValid: false,
+			message: "Please add at least one timesheet entry before saving."
+		};
+	}
+
+	// Validate each row in the time_logs table
+	for (let i = 0; i < frm.doc.time_logs.length; i++) {
+		const row = frm.doc.time_logs[i];
+		const missingFields = [];
+		
+		// Check required fields (including empty strings and whitespace)
+		if (!row.project || !String(row.project).trim()) {
+			missingFields.push("Project");
+		}
+		if (!row.task || !String(row.task).trim()) {
+			missingFields.push("Task");
+		}
+		if (!row.start_date_time) {
+			missingFields.push("Start Date and Time");
+		}
+		if (!row.end_date_time) {
+			missingFields.push("End Date and Time");
+		}
+		
+		if (missingFields.length > 0) {
+			return {
+				isValid: false,
+				message: `Row ${i + 1} is missing: ${missingFields.join(", ")}`
+			};
+		}
+
+		// Validate that end time is after start time
+		if (row.start_date_time && row.end_date_time) {
+			const startDate = new Date(row.start_date_time);
+			const endDate = new Date(row.end_date_time);
+			
+			if (endDate <= startDate) {
+				return {
+					isValid: false,
+					message: `Row ${i + 1}: End Date and Time must be after Start Date and Time`
+				};
+			}
+		}
+	}
+	
+	return {
+		isValid: true,
+		message: `✓ All ${frm.doc.time_logs.length} timesheet entries are valid and ready to save.`
+	};
 }
 
 function showValidationMessage(frm, message, type = "info") {
@@ -405,6 +496,16 @@ function showValidationMessage(frm, message, type = "info") {
 		header.after(validationDiv);
 	} else {
 		wrapper.prepend(validationDiv);
+	}
+}
+
+// ----------------------- DEBUG FUNCTIONS -----------------------
+function addDebugButton(frm) {
+	// Only add debug button in development
+	if (frappe.boot.developer_mode) {
+		frm.add_custom_button(__("Debug Row Data"), function() {
+			debugRowData(frm);
+		}, __("Debug"));
 	}
 }
 

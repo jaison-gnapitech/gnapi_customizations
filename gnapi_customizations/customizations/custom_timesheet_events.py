@@ -71,9 +71,13 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
         # Check if any required field is missing
         missing_fields = []
         
-        if not row.get('project'):
+        # Debug: Log the row data to see what's actually there
+        frappe.logger().info(f"Row {i} data: {dict(row)}")
+        
+        # Check for empty, None, or whitespace-only values
+        if not row.get('project') or not str(row.get('project', '')).strip():
             missing_fields.append("Project")
-        if not row.get('task'):
+        if not row.get('task') or not str(row.get('task', '')).strip():
             missing_fields.append("Task")
         if not row.get('start_date_time'):
             missing_fields.append("Start Date and Time")
