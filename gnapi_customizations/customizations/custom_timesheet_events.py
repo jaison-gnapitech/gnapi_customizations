@@ -64,14 +64,20 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
     # Validate Custom Timesheet Detail child table
     if hasattr(doc, 'time_logs') and doc.time_logs:
         for i, row in enumerate(doc.time_logs, 1):
+            # Check if any required field is missing
+            missing_fields = []
+            
             if not row.get('project'):
-                frappe.throw(f"Project is required in Time Log row {i}")
+                missing_fields.append("Project")
             if not row.get('task'):
-                frappe.throw(f"Task is required in Time Log row {i}")
+                missing_fields.append("Task")
             if not row.get('start_date_time'):
-                frappe.throw(f"Start Date Time is required in Time Log row {i}")
+                missing_fields.append("Start Date Time")
             if not row.get('end_date_time'):
-                frappe.throw(f"End Date Time is required in Time Log row {i}")
+                missing_fields.append("End Date Time")
+            
+            if missing_fields:
+                frappe.throw(f"Mandatory fields required in table Time Logs, Row {i}: {', '.join(missing_fields)}")
             
             # Validate that end time is after start time
             if row.get('start_date_time') and row.get('end_date_time'):
