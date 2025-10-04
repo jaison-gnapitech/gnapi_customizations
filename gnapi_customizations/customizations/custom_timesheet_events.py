@@ -62,29 +62,33 @@ def on_custom_timesheet_validate(doc: Document, method: str | None = None) -> No
             frappe.throw("End Date and End Time are required")
     
     # Validate Custom Timesheet Detail child table (Time Logs)
-    if hasattr(doc, 'time_logs') and doc.time_logs:
-        for i, row in enumerate(doc.time_logs, 1):
-            # Check if any required field is missing
-            missing_fields = []
-            
-            if not row.get('project'):
-                missing_fields.append("Project")
-            if not row.get('task'):
-                missing_fields.append("Task")
-            if not row.get('start_date_time'):
-                missing_fields.append("Start Date and Time")
-            if not row.get('end_date_time'):
-                missing_fields.append("End Date and Time")
-            
-            if missing_fields:
-                frappe.throw(f"Mandatory fields required in table Time Logs, Row {i}: {', '.join(missing_fields)}")
-            
-            # Validate that end time is after start time
-            if row.get('start_date_time') and row.get('end_date_time'):
-                start_dt = get_datetime(row.start_date_time)
-                end_dt = get_datetime(row.end_date_time)
-                if end_dt <= start_dt:
-                    frappe.throw(f"End Date and Time must be after Start Date and Time in Time Log row {i}")
+    # First check if at least one row exists
+    if not hasattr(doc, 'time_logs') or not doc.time_logs or len(doc.time_logs) == 0:
+        frappe.throw("At least one row is required in Custom Timesheet Details table")
+    
+    # Validate each row in the time_logs table
+    for i, row in enumerate(doc.time_logs, 1):
+        # Check if any required field is missing
+        missing_fields = []
+        
+        if not row.get('project'):
+            missing_fields.append("Project")
+        if not row.get('task'):
+            missing_fields.append("Task")
+        if not row.get('start_date_time'):
+            missing_fields.append("Start Date and Time")
+        if not row.get('end_date_time'):
+            missing_fields.append("End Date and Time")
+        
+        if missing_fields:
+            frappe.throw(f"Mandatory fields required in Custom Timesheet Details, Row {i}: {', '.join(missing_fields)}")
+        
+        # Validate that end time is after start time
+        if row.get('start_date_time') and row.get('end_date_time'):
+            start_dt = get_datetime(row.start_date_time)
+            end_dt = get_datetime(row.end_date_time)
+            if end_dt <= start_dt:
+                frappe.throw(f"End Date and Time must be after Start Date and Time in Custom Timesheet Details row {i}")
 
 def on_custom_timesheet_before_save(doc: Document, method: str | None = None) -> None:
     # Recalculate taken_hours for each time log row if both datetimes exist

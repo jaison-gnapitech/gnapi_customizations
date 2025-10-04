@@ -14,6 +14,10 @@ frappe.ui.form.on("Custom Timesheet", {
 	status: function (frm) {
 		validateStatusChange(frm);
 	},
+
+	before_save: function (frm) {
+		validateCustomTimesheetDetails(frm);
+	},
 });
 
 // ----------------------- EMPLOYEE STATUS RESTRICTIONS -----------------------
@@ -42,6 +46,67 @@ function validateStatusChange(frm) {
 				message: __("Employees can only set status to Draft or Submitted"),
 			});
 			frm.set_value("status", "Draft");
+		}
+	}
+}
+
+// ----------------------- CUSTOM TIMESHEET DETAILS VALIDATION -----------------------
+function validateCustomTimesheetDetails(frm) {
+	// Check if time_logs table exists and has at least one row
+	if (!frm.doc.time_logs || frm.doc.time_logs.length === 0) {
+		frappe.msgprint({
+			title: __("Validation Error"),
+			indicator: "red",
+			message: __("At least one row is required in Custom Timesheet Details table"),
+		});
+		frappe.validated = false;
+		return;
+	}
+
+	// Validate each row in the time_logs table
+	for (let i = 0; i < frm.doc.time_logs.length; i++) {
+		const row = frm.doc.time_logs[i];
+		const missingFields = [];
+
+		// Check required fields
+		if (!row.project) {
+			missingFields.push("Project");
+		}
+		if (!row.task) {
+			missingFields.push("Task");
+		}
+		if (!row.start_date_time) {
+			missingFields.push("Start Date and Time");
+		}
+		if (!row.end_date_time) {
+			missingFields.push("End Date and Time");
+		}
+
+		// Show error if any required fields are missing
+		if (missingFields.length > 0) {
+			frappe.msgprint({
+				title: __("Validation Error"),
+				indicator: "red",
+				message: __("Mandatory fields required in Custom Timesheet Details, Row {0}: {1}", [i + 1, missingFields.join(", ")]),
+			});
+			frappe.validated = false;
+			return;
+		}
+
+		// Validate that end time is after start time
+		if (row.start_date_time && row.end_date_time) {
+			const startDate = new Date(row.start_date_time);
+			const endDate = new Date(row.end_date_time);
+			
+			if (endDate <= startDate) {
+				frappe.msgprint({
+					title: __("Validation Error"),
+					indicator: "red",
+					message: __("End Date and Time must be after Start Date and Time in Custom Timesheet Details row {0}", [i + 1]),
+				});
+				frappe.validated = false;
+				return;
+			}
 		}
 	}
 }
